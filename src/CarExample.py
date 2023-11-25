@@ -2,12 +2,20 @@ from vector2d import Vector2D
 from Entity import Entity
 from Utils import clamp
 from random import random
+import pygame
 
 
 class Car(Entity):
-    def __init__(self, position: Vector2D = Vector2D(0, 0), rotation: float = 0, name: str = "Honda Civic", horsePower: float = 180.0, maxRpm: int = 7800, gears: int = 6, downForce: float = 1.0, turbo: bool = False):
+    def __init__(self, position: Vector2D = Vector2D(0, 0), rotation: float = 0, name: str = "Honda Civic", weight: float = 2800, horsePower: float = 180.0, maxRpm: int = 7800, gears: int = 6, downForce: float = 1.0, turbo: bool = False):
+        super().__init__()
         self.position = position
         self.rotation = rotation
+        self.rect = pygame.Rect(self.position.x, self.position.y, 23, 69)
+        # self.collisionRect = self.rect.rotate(-self.rotation)
+
+        rotatedRectangle = pygame.transform.rotate(self.rect, self.rotation)
+
+        print(self.rect, rotatedRectangle)
         self.speed = 0.0
         # -1.0 = steering to the left
         # 1.0 = steering to the right
@@ -37,6 +45,7 @@ class Car(Entity):
         self.accelerating = False
         
         # stats
+        self.mass = weight
         self.horsePower = horsePower
         self.downForce = downForce # range for downforce is 0.0 to 1.0 where 0.0 is no downforce (u spin) and 1.0 is full downforce (u cant even turn idk)
         self.tireWear = 0.0
@@ -60,5 +69,10 @@ class Car(Entity):
             self.rpm += 10 * deltaTime
         if self.braking:
             self.rpm -= 10 * deltaTime
+        self.rect.x = self.position.x
+        self.rect.y = self.position.y
         # self.speed += someAmmount * gear * rpm * horsepower * deltaTime # some example of speed increase (speed should be increased if accelerating and should be increased by an ammount made from combining the car settings etc)
 
+
+if __name__ == "__main__":
+    car = Car(Vector2D(0, 0), 0)

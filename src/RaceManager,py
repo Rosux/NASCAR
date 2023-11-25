@@ -5,13 +5,23 @@ from random import random
 from CarExample import Car
 
 
-class Race():
+class Race(Entity):
     def __init__(self, participants: int = 0, cars: list[Car] = []):
+        super().__init__()
         self.cars = []
         for car in cars:
             self.cars.append(car)
         self.raceLength = 180.0 # (3 minutes)
         self.time = 0.0
+        
+    def Update(self, deltaTime):
+        # loop over cars and check collision
+        for i in range(len(cars)):
+            for j in range(len(cars)):
+                if i == j:
+                    continue
+                if cars[i].rect.colliderect(cars[j].rect):
+                    print("colliding")
 
     def StartRace(self):
         pass
