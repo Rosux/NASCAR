@@ -64,8 +64,12 @@ class RectangleCollision:
 
         return True
 
-
 if __name__ == "__main__":
-    a = RectangleCollision(Vector2D(0, 0), 1, 1, 0) # cube of 0.5 from center wide/high
+    a = RectangleCollision(Vector2D(0, 0), 1, 1, 0)
     b = RectangleCollision(Vector2D(1, 1), 1, 1, 0)
-    print(a.CheckCollision(b))
+    c = RectangleCollision(Vector2D(1, 1), 0.999999, 0.999999, 0)
+    print(f"""
+A should intersect with B but not with C:
+A check with B (True expected) = {a.CheckCollision(b)}
+A check with C (False expected) = {a.CheckCollision(c)}
+""")

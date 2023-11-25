@@ -43,6 +43,7 @@ class Car(Entity):
         # car states
         self.braking = False
         self.accelerating = False
+        self.handBrake = False
         
         # stats
         self.mass = weight
