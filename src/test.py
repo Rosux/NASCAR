@@ -1,7 +1,8 @@
 import pygame
 import sys
 from pygame.locals import QUIT
-import math
+from vector2d import Vector2D
+from math import cos, sin
 
 class Vector2D:
     def __init__(self, x, y):
@@ -9,7 +10,7 @@ class Vector2D:
         self.y = y
 
 class RigidBody2D:
-    def __init__(self, position, width, height, mass=1.0, rotational_damping=0.98):
+    def __init__(self, position, width, height, mass=1.0, rotational_damping=0.98, velocity_damping=0.98):
         self.position = position
         self.width = width
         self.height = height
@@ -18,6 +19,7 @@ class RigidBody2D:
         self.orientation = 0  # in radians
         self.rotational_velocity = 0
         self.rotational_damping = rotational_damping
+        self.velocity_damping = velocity_damping
 
     def add_force_at_position(self, force, position):
         # Calculate linear acceleration based on the applied force
@@ -46,7 +48,9 @@ class RigidBody2D:
         self.orientation += self.rotational_velocity * delta_time
 
         # Apply rotational damping to reduce rotational velocity over time
-        # self.rotational_velocity *= self.rotational_damping
+        self.rotational_velocity *= self.rotational_damping
+        self.velocity.x *= self.velocity_damping
+        self.velocity.y *= self.velocity_damping
 
     def get_rotated_points(self):
         # Calculate the rotated points of the rectangle
@@ -54,8 +58,8 @@ class RigidBody2D:
         half_height = self.height / 2
 
         # Calculate the rotated points
-        cos_theta = math.cos(self.orientation)
-        sin_theta = math.sin(self.orientation)
+        cos_theta = cos(self.orientation)
+        sin_theta = sin(self.orientation)
 
         x1 = self.position.x + half_width * cos_theta - half_height * sin_theta
         y1 = self.position.y + half_width * sin_theta + half_height * cos_theta
@@ -87,7 +91,7 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
 # Create a RigidBody2D instance
-rect_body = RigidBody2D(position=Vector2D(200, 200), width=30, height=60, mass=1)
+rect_body = RigidBody2D(Vector2D(200, 200), 30, 60, 1)
 
 # Main game loop
 clock = pygame.time.Clock()
@@ -100,7 +104,8 @@ while True:
             sys.exit()
     if not hit:
         # Apply force at a specific position
-        force = Vector2D(10, 0)
+        force = Vector2D(100, 0)
+        # application_position = rect_body.position
         application_position = Vector2D(0, 0)
         rect_body.add_force_at_position(force, application_position)
         hit = True
