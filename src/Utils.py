@@ -1,4 +1,5 @@
 from vector2d import Vector2D
+import math
 
 
 def clamp(n, min, max):
@@ -25,3 +26,12 @@ def lerp(a: float, b: float, t: float) -> float:
         4.2 == lerp(1, 5, 0.8)
     """
     return (1 - t) * a + t * b
+
+
+def Magnitude(p1):
+    return math.sqrt(p1.x**2 + p1.y**2)
+
+
+def RotateVector(p1, angle):
+    radians = math.radians(angle)
+    return Vector2D(p1.x * math.cos(radians) - p1.y * math.sin(radians), p1.x * math.sin(radians) + p1.y * math.cos(radians))

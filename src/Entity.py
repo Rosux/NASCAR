@@ -13,7 +13,7 @@ class Entity:
         self.active = True
         self.collision = True
 
-    def Update(self, deltaTime):
+    def Update(self, deltaTime, events):
         # this runs each frame
         if Entity.game is not None:
             pass

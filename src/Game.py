@@ -46,17 +46,19 @@ class Game:
             # print(self.clock.get_fps())
             # if user presses the quit button stop game
             pygame.event.pump()
-            for event in pygame.event.get():
+            events = pygame.event.get()
+            for event in events:
                 if event.type == pygame.QUIT:
                     self.running = False
                 # if event.type == pygame.KEYDOWN:
-                #     pass
+                #     if event.key == pygame.K_SPACE:
+                #         print("gyy")
 
             # run update method on all entities
             if not self.paused:
                 for entity in self.entities:
                     if entity.active:
-                        entity.Update(dt)
+                        entity.Update(dt, events)
             if not self.paused:
                 self.DrawScene(dt)
             else:

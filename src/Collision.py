@@ -4,9 +4,13 @@ import sys
 
 class RectangleCollision:
     def __init__(self, position=Vector2D(0, 0), width=0, height=0, rotation=0):
-        self.position = position
+        self.position = Vector2D(position.x, position.y)
         self.width = width
         self.height = height
+        self.rotation = rotation
+
+    def UpdatePositions(self, position, rotation):
+        self.position = Vector2D(position.x, position.y)
         self.rotation = rotation
 
     def Normalize(self, vector):
