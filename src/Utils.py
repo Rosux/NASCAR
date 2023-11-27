@@ -32,6 +32,9 @@ def Magnitude(p1):
     return math.sqrt(p1.x**2 + p1.y**2)
 
 
-def RotateVector(p1, angle):
-    radians = math.radians(angle)
+def RotateVector(p1, angle, radians=False):
+    if not radians:
+        radians = math.radians(angle)
+    else:
+        radians = angle
     return Vector2D(p1.x * math.cos(radians) - p1.y * math.sin(radians), p1.x * math.sin(radians) + p1.y * math.cos(radians))
