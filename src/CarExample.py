@@ -123,7 +123,7 @@ class Car(Entity):
         # self.downForce = 0.5 # range for downforce is 0.0 to 1.0 where 0.0 is no downforce (u spin) and 1.0 is full downforce (u cant even turn idk)
         # self.tireWear = tireWear # range for tireWear is 0.0 to 1.0 where 0.0 is where u ride on the rims and 1.0 is perfectly new race tires
         # self.bodyWear = bodyWear # range for bodywear is 0.0 to 1.0 where 0.0 is ur riding a wreck and 1.0 is perfectly new race car
-        self.speed = 2.0
+        self.speed = 3.0
         self.frontGrip = 1.0 # range of grip is 0.0 to 1.0 where 0.0 is no grip at all and 1.0 is full grip
         self.rearGrip = 0.0 # range of grip is 0.0 to 1.0 where 0.0 is no grip at all and 1.0 is full grip
 
@@ -217,9 +217,9 @@ class Car(Entity):
             location = self.position + RotateVector(tire, self.rotation, True)
             # set force applied to tire into tire direction (still gotta do hp rpm etc)
             if self.driveType == DriveType.ALL or self.driveType == DriveType.FRONT:
-                force = RotateVector(Vector2D(0, -1) * self.speed * self.throttle, self.rotation+(self.maxSteeringAngle * self.steeringAngle), True) * 1000 * deltaTime
+                force = RotateVector(Vector2D(0, -1) * self.speed * self.throttle, self.rotation+(self.maxSteeringAngle * self.steeringAngle), True) * deltaTime
             else:
-                force = RotateVector(Vector2D(0, -1) * self.throttle, self.rotation+(self.maxSteeringAngle * self.steeringAngle), True) * 1000 * deltaTime
+                force = RotateVector(Vector2D(0, -1) * self.throttle, self.rotation+(self.maxSteeringAngle * self.steeringAngle), True) * deltaTime
             # calculate force required to aid in steering
             rightVel = Vector2D.DotProduct(self.rb.GetPointVelocity(location), RotateVector(Vector2D(-1, 0), self.rotation+(self.maxSteeringAngle * self.steeringAngle), True))
             rotatedPushForce = RotateVector(Vector2D(rightVel, 0), self.rotation+(self.maxSteeringAngle * self.steeringAngle), True) * self.frontGrip * deltaTime
