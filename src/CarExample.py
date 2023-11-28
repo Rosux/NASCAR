@@ -74,7 +74,7 @@ class Car(Entity):
         ):
         super().__init__()
         self.name = name
-        self.rb = RigidBody2D(position, 23, 69, math.radians(rotation), 1.0, 3.5, 5.0)
+        self.rb = RigidBody2D(position, 23, 69, math.radians(rotation), 1.0, 2.5, 5.0)
         # self.collider = RectangleCollision(self.position, 23, 69, self.rotation)
         self.steeringSpeed = steeringSpeed
         self.steeringReturnSpeed = steeringReturnSpeed
@@ -123,7 +123,9 @@ class Car(Entity):
         # self.downForce = 0.5 # range for downforce is 0.0 to 1.0 where 0.0 is no downforce (u spin) and 1.0 is full downforce (u cant even turn idk)
         # self.tireWear = tireWear # range for tireWear is 0.0 to 1.0 where 0.0 is where u ride on the rims and 1.0 is perfectly new race tires
         # self.bodyWear = bodyWear # range for bodywear is 0.0 to 1.0 where 0.0 is ur riding a wreck and 1.0 is perfectly new race car
-        self.grip = 1.0 # range of grip is 0.0 to 1.0 where 0.0 is no grip at all and 1.0 is full grip
+        self.speed = 2.0
+        self.frontGrip = 1.0 # range of grip is 0.0 to 1.0 where 0.0 is no grip at all and 1.0 is full grip
+        self.rearGrip = 0.0 # range of grip is 0.0 to 1.0 where 0.0 is no grip at all and 1.0 is full grip
 
     def GetTransmissionRatio(self):
         if self.gear == -1:
@@ -207,53 +209,43 @@ class Car(Entity):
         force = RotateVector(force, self.rotation, True)
         
         self.forces = []
+        self.tireForces = []
         # if self.driveType == DriveType.ALL or self.driveType == DriveType.FRONT:
         # if self.driveType == DriveType.ALL or self.driveType == DriveType.REAR:
         for i, tire in enumerate(self.frontTireOffset):
+            # set tire location relative to car and rotate it
             location = self.position + RotateVector(tire, self.rotation, True)
-            force = RotateVector(Vector2D(0, -4) * self.throttle, self.rotation+(self.maxSteeringAngle * self.steeringAngle), True)
-            self.forces.append(force)
-            # if i == 0:
-            #     right = Vector2D(1, 0)
-            # else:
-            #     right = Vector2D(-1, 0)
-            
-            # rightVel = Vector2D.DotProduct(self.rb.GetPointVelocity(location), RotateVector(right, self.rotation, True))
-            # rotatedPushForce = RotateVector(Vector2D(-rightVel, 0), self.rotation, True)
-            
-            
+            # set force applied to tire into tire direction (still gotta do hp rpm etc)
+            if self.driveType == DriveType.ALL or self.driveType == DriveType.FRONT:
+                force = RotateVector(Vector2D(0, -1) * self.speed * self.throttle, self.rotation+(self.maxSteeringAngle * self.steeringAngle), True) * 1000 * deltaTime
+            else:
+                force = RotateVector(Vector2D(0, -1) * self.throttle, self.rotation+(self.maxSteeringAngle * self.steeringAngle), True) * 1000 * deltaTime
+            # calculate force required to aid in steering
+            rightVel = Vector2D.DotProduct(self.rb.GetPointVelocity(location), RotateVector(Vector2D(-1, 0), self.rotation+(self.maxSteeringAngle * self.steeringAngle), True))
+            rotatedPushForce = RotateVector(Vector2D(rightVel, 0), self.rotation+(self.maxSteeringAngle * self.steeringAngle), True) * self.frontGrip * deltaTime
+            # apply force at tire position
+            self.rb.AddForceAtPosition(rotatedPushForce, location)
             self.rb.AddForceAtPosition(force, location)
-            # self.rb.AddForceAtPosition(rotatedPushForce, tire)
-            
-        for tire in self.rearTireOffset:
+            self.forces.append(force)
+            self.tireForces.append(rotatedPushForce)
+        for i, tire in enumerate(self.rearTireOffset):
+            # set tire location relative to car and rotate it
             location = self.position + RotateVector(tire, self.rotation, True)
-            force = RotateVector(Vector2D(0, -4) * self.throttle, self.rotation, True)
-            self.forces.append(force)
+            # set force applied to tire into tire direction (still gotta do hp rpm etc)
+            if self.driveType == DriveType.ALL or self.driveType == DriveType.REAR:
+                force = RotateVector(Vector2D(0, -1) * self.speed * self.throttle, self.rotation, True) * 1000 * deltaTime
+            else:
+                force = RotateVector(Vector2D(0, -1) * self.throttle, self.rotation, True) * 1000 * deltaTime
+            # calculate force required to aid in steering
+            rightVel = Vector2D.DotProduct(self.rb.GetPointVelocity(location), RotateVector(Vector2D(-1, 0), self.rotation, True))
+            rotatedPushForce = RotateVector(Vector2D(rightVel, 0), self.rotation, True) * self.rearGrip * deltaTime
+            # apply force at tire position
+            self.rb.AddForceAtPosition(rotatedPushForce, location)
             self.rb.AddForceAtPosition(force, location)
+            self.forces.append(force)
+            self.tireForces.append(rotatedPushForce)
             
-            # tire = RotateVector(tire, self.rotation, True)
-            # tire = self.position + tire
-            
-            # rightVel = Vector2D.DotProduct(self.rb.GetPointVelocity(tire), RotateVector(Vector2D(1, 0), self.rotation, True))
-            # rotatedPushForce = RotateVector(Vector2D(-rightVel, 0), self.rotation, True)
-            
-            # self.rb.AddForceAtPosition(force, tire)
-            # self.rb.AddForceAtPosition(rotatedPushForce, tire)
-            
-
         self.rb.update(deltaTime)
-        
-        # if self.accelerating:
-            # self.velocity.y += self.GetEngineForce() * deltaTime
-        # if self.braking:
-            # self.velocity.y -= self.GetEngineForce()/4 * deltaTime
-        
-        # calculate the drag
-        # drag = 0.01 * self.mass * self.grip
-
-        # rotate velocity in cars direction
-        # radians = self.rotation * (math.pi/180)
-        # self.velocity = Vector2D(round(self.velocity.x * math.cos(radians) - self.velocity.y * math.sin(radians), 10), round(self.velocity.x * math.sin(radians) + self.velocity.y * math.cos(radians), 10))
         
         # self.GetEngineRPM()
         # print(Magnitude(self.velocity))
@@ -286,7 +278,7 @@ if __name__ == "__main__":
     running = True
     paused = False
     screenWidth, screenHeight = pygame.display.get_surface().get_size()
-    car = Car("UwU", Vector2D(screenWidth//2, screenHeight//2), 0)
+    car = Car("UwU", Vector2D(screenWidth//2, screenHeight//2), 90)
     entities = [car]
     carImage = pygame.image.load("./assets/sprites/Annett-car2.jpg")
     carRect = carImage.get_rect()
@@ -323,11 +315,13 @@ if __name__ == "__main__":
             pygame.draw.circle(screen, (255, 0, 0), center22, 2)
 
             # draw velocity vector
-            pygame.draw.line(screen, (255, 255, 0), (entity.position.x, entity.position.y), (entity.position.x+entity.velocity.x, entity.position.y+entity.velocity.y), 2)
+            pygame.draw.line(screen, (255, 255, 0), (entity.position.x, entity.position.y), (entity.position.x+entity.velocity.x/100, entity.position.y+entity.velocity.y/100), 2)
             
             # draw forces on wheels
             centers = [center1, center2, center11, center22]
             for i, force in enumerate(entity.forces):
-                pygame.draw.line(screen, (0, 0, 255), centers[i], (centers[i][0]+(force.x*50), centers[i][1]+(force.y*50)), 2)
+                pygame.draw.line(screen, (0, 0, 255), centers[i], (centers[i][0]+(force.x), centers[i][1]+(force.y)), 2)
+            for i, force in enumerate(entity.tireForces):
+                pygame.draw.line(screen, (255, 0, 0), centers[i], (centers[i][0]+(force.x*5), centers[i][1]+(force.y*5)), 2)
             
         pygame.display.flip()
