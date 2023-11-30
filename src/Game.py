@@ -50,9 +50,6 @@ class Game:
             for event in events:
                 if event.type == pygame.QUIT:
                     self.running = False
-                # if event.type == pygame.KEYDOWN:
-                #     if event.key == pygame.K_SPACE:
-                #         print("gyy")
 
             # run update method on all entities
             if not self.paused:

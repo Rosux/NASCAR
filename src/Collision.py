@@ -1,5 +1,6 @@
 from vector2d import Vector2D
 from math import sqrt, cos, sin, radians
+from Utils import RotateVector
 import sys
 
 class RectangleCollision:
@@ -7,7 +8,7 @@ class RectangleCollision:
         self.position = Vector2D(position.x, position.y)
         self.width = width
         self.height = height
-        self.rotation = rotation
+        self.rotation = radians(rotation) # in radians
 
     def UpdatePositions(self, position, rotation):
         self.position = Vector2D(position.x, position.y)
@@ -31,10 +32,10 @@ class RectangleCollision:
         halfWidth = rect.width/2
         halfHeight = rect.height/2
         return [
-            rect.position + self.RotatePoint(Vector2D(halfWidth, halfHeight), radians(rect.rotation)),
-            rect.position - self.RotatePoint(Vector2D(halfWidth, halfHeight), radians(rect.rotation)),
-            rect.position + self.RotatePoint(Vector2D(halfWidth, -halfHeight), radians(rect.rotation)),
-            rect.position - self.RotatePoint(Vector2D(-halfWidth, halfHeight), radians(rect.rotation)),
+            rect.position + RotateVector(Vector2D(-halfWidth, halfHeight), rect.rotation, True),
+            rect.position + RotateVector(Vector2D(halfWidth, halfHeight), rect.rotation, True),
+            rect.position + RotateVector(Vector2D(halfWidth, -halfHeight), rect.rotation, True),
+            rect.position + RotateVector(Vector2D(-halfWidth, -halfHeight), rect.rotation, True),
         ]
 
     def CheckCollision(self, other):

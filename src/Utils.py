@@ -11,6 +11,10 @@ def clamp(n, min, max):
         return n
 
 
+def Dot(v1, v2):
+    return v1.x * v2.x + v1.y * v2.y
+
+
 def clampVector(vector, minX, maxX, minY, maxY):
     return Vector2D(
         clamp(vector.x, minX, maxX),
@@ -28,7 +32,7 @@ def lerp(a: float, b: float, t: float) -> float:
     return (1 - t) * a + t * b
 
 
-def Magnitude(p1):
+def Magnitude(p1):  
     return math.sqrt(p1.x**2 + p1.y**2)
 
 
