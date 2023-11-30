@@ -233,12 +233,12 @@ if __name__ == "__main__":
             for entity in entities:
                 if entity.active:
                     entity.Update(dt, events)
-            for i, entityI in enumerate(entities):
-                if entityI.active and entityI.collision:
-                    for j, entityJ in enumerate(entities):
-                        if i != j and entityJ.active and entityJ.collision:
-                            print(entityI, entityJ)
-            print("end frame")
+            # for i, entityI in enumerate(entities):
+            #     if entityI.active and entityI.collision:
+            #         for j, entityJ in enumerate(entities):
+            #             if i != j and entityJ.active and entityJ.collision:
+                            # print(entityI, entityJ)
+            # print("end frame")
                         
         screen.fill((0, 0, 0, 255))
         for entity in entities:
