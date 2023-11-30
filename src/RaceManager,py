@@ -3,28 +3,64 @@ from Entity import Entity
 from Utils import clamp
 from random import random
 from CarExample import Car
+import math
+import pygame
 
 
 class Race(Entity):
-    def __init__(self, participants: int = 0, cars: list[Car] = []):
+    def __init__(self, cars: list[Car] = []):
         super().__init__()
-        self.cars = []
-        for car in cars:
-            self.cars.append(car)
+        self.cars = cars
         self.raceLength = 180.0 # (3 minutes)
-        self.time = 0.0
+        self.currentTime = 0.0
         
-    def Update(self, deltaTime):
-        # loop over cars and check collision
-        for i in range(len(cars)):
-            for j in range(len(cars)):
-                if i == j:
-                    continue
-                if cars[i].rect.colliderect(cars[j].rect):
-                    print("colliding")
+    def Update(self, deltaTime, events):
+        # dit runt elke frame
+        self.currentTime += deltaTime
+        if self.currentTime >= 1.0:
+            print("dit runt elke seconden")
+            self.currentTime = 0
 
     def StartRace(self):
         pass
 
     def StopRace(self):
         pass
+
+    def GetTimeLeft(self):
+        pass
+    
+    def GetTotalTime(self):
+        pass
+
+
+if __name__ == "__main__":
+    pygame.display.init()
+    screen = pygame.display.set_mode((720, 480), pygame.RESIZABLE)
+    pygame.display.set_caption("NASCAR")
+    clock = pygame.time.Clock()
+    running = True
+    paused = False
+    screenWidth, screenHeight = pygame.display.get_surface().get_size()
+    
+    
+    # verander dit
+    RACE = Race()
+    
+    
+    entities = [RACE]
+    while running:
+        dt = clock.tick(0) / 1000.0
+        pygame.event.pump()
+        events = pygame.event.get()
+
+        for event in events:
+            if event.type == pygame.QUIT:
+                running = False
+        if not paused:
+            for entity in entities:
+                if entity.active:
+                    entity.Update(dt, events)
+                        
+        screen.fill((0, 0, 0, 255))
+        pygame.display.flip()
