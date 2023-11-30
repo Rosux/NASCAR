@@ -1,6 +1,6 @@
 from vector2d import Vector2D
 from math import sqrt, cos, sin, radians
-from Utils import RotateVector
+from Utils import RotateVector, RotateVectorAroundPoint
 import sys
 
 class RectangleCollision:
@@ -42,6 +42,8 @@ class RectangleCollision:
         selfPoints = self.GetPoints(self)
         otherPoints = self.GetPoints(other)
         
+        insidePoints = []
+        
         for i in range(2):
             if i == 1:
                 otherPoints, selfPoints = selfPoints, otherPoints
@@ -64,10 +66,15 @@ class RectangleCollision:
                     minRange2 = min(minRange2, q)
                     maxRange2 = max(maxRange2, q)
                 
+                if maxRange2 >= minRange1 and maxRange1 >= minRange2:
+                    insidePoints.append(selfPoints[a])
+                    
                 if not (maxRange2 >= minRange1 and maxRange1 >= minRange2):
                     return False
 
-        return True
+        return insidePoints
+
+
 
 if __name__ == "__main__":
     a = RectangleCollision(Vector2D(0, 0), 1, 1, 0)
