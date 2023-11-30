@@ -226,6 +226,9 @@ if __name__ == "__main__":
         dt = clock.tick(0) / 1000.0
         pygame.event.pump()
         events = pygame.event.get()
+
+        colliderHit = False
+        
         for event in events:
             if event.type == pygame.QUIT:
                 running = False
@@ -233,18 +236,21 @@ if __name__ == "__main__":
             for entity in entities:
                 if entity.active:
                     entity.Update(dt, events)
-            for i, entityI in enumerate(entities):
-                if entityI.active and entityI.collision:
-                    for j, entityJ in enumerate(entities):
-                        if i != j and entityJ.active and entityJ.collision:
-                            print(entityI, entityJ)
-            print("end frame")
+            filteredEntites = [e for e in entities if e.active and e.collision and hasattr(e, "collider")]
+            for i in range(len(filteredEntites)):
+                for j in range(i+1, len(filteredEntites)):
+                    entity1 = filteredEntites[i]
+                    entity2 = filteredEntites[j]
+                    colliderHit = entity1.collider.CheckCollision(entity2.collider)
                         
         screen.fill((0, 0, 0, 255))
         for entity in entities:
             # draw collision masks
             points = entity.collider.GetPoints(entity.collider)
-            pygame.draw.polygon(screen, (255, 255, 255), [(p.x, p.y) for p in points], 1)
+            if colliderHit:
+                pygame.draw.polygon(screen, (255, 0, 0), [(p.x, p.y) for p in points], 1)
+            else:
+                pygame.draw.polygon(screen, (255, 255, 255), [(p.x, p.y) for p in points], 1)
             
             
             if isinstance(entity, Car):
