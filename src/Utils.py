@@ -42,3 +42,24 @@ def RotateVector(p1, angle, radians=False):
     else:
         radians = angle
     return Vector2D(p1.x * math.cos(radians) - p1.y * math.sin(radians), p1.x * math.sin(radians) + p1.y * math.cos(radians))
+
+
+def RotateVectorAroundPoint(vector, pivot, angle, radians=False):
+    if not radians:
+        radians = math.radians(angle)
+    else:
+        radians = angle
+
+    translated_vector = Vector2D(vector.x - pivot.x, vector.y - pivot.y)
+
+    rotated_x = translated_vector.x * math.cos(radians) - translated_vector.y * math.sin(radians)
+    rotated_y = translated_vector.x * math.sin(radians) + translated_vector.y * math.cos(radians)
+
+    rotated_vector = Vector2D(rotated_x, rotated_y)
+
+    # Translate the vector back to its original position
+    rotated_vector.x += pivot.x
+    rotated_vector.y += pivot.y
+
+    return rotated_vector
+
