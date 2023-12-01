@@ -7,19 +7,61 @@ import math
 import pygame
 
 
+class Checkpoint:
+    def __init__(self, position, radius=10):
+        self.position = position
+        self.radius = radius
+        self.is_passed = False
+
+    def CheckCarPassing(self, car_position):
+        if not self.is_passed:
+            distance_to_checkpoint = math.dist(car_position, self.position)
+            if distance_to_checkpoint < self.radius:
+                self.is_passed = True
+                return True
+        return False
+
 class Race(Entity):
     def __init__(self, cars: list[Car] = []):
         super().__init__()
         self.cars = cars
-        self.raceLength = 180.0 # (3 minutes)
-        self.currentTime = 0.0
-        
+        self.raceLength = 180.0  # (3 minutes)
+        self.currentTime = -5.0
+        self.checkpoints = [
+            Checkpoint((100, 100)),
+            Checkpoint((200, 200)),
+            Checkpoint((300, 300))
+        ]
+
     def Update(self, deltaTime, events):
-        # dit runt elke frame
         self.currentTime += deltaTime
-        if self.currentTime >= 1.0:
-            print("dit runt elke seconden")
-            self.currentTime = 0
+
+        # Check if the race is over
+        if self.currentTime >= self.raceLength:
+            pygame.quit()
+
+        # Checkpoint system
+        for car in self.cars:
+            car_position = car.GetPosition()  # Adjust this method based on your Car class
+            for checkpoint in self.checkpoints:
+                if checkpoint.CheckCarPassing(car_position):
+                    car.AddPoints(10)  # Adjust the points based on your preference
+                    print(f"Car {car.GetCarID()} passed a checkpoint!")
+
+            # You can add more logic for handling additional checkpoints or finishing the race
+
+    def StartRace(self):
+        pass
+
+    def StopRace(self):
+        pass
+
+    def GetTimeLeft(self):
+        pass
+    
+    def GetTotalTime(self):
+        pass
+
 
     def StartRace(self):
         pass
@@ -35,32 +77,43 @@ class Race(Entity):
 
 
 if __name__ == "__main__":
-    pygame.display.init()
+    pygame.init()  # Initialize Pygame
+    font = pygame.font.Font(None, 36)
     screen = pygame.display.set_mode((720, 480), pygame.RESIZABLE)
     pygame.display.set_caption("NASCAR")
     clock = pygame.time.Clock()
     running = True
     paused = False
     screenWidth, screenHeight = pygame.display.get_surface().get_size()
-    
-    
-    # verander dit
-    RACE = Race()
-    
-    
-    entities = [RACE]
+
+    # Create a Race instance
+    race_instance = Race()
+
     while running:
-        dt = clock.tick(0) / 1000.0
+        dt = clock.tick(60) / 1000.0  # Cap the frame rate at 60 frames per second
         pygame.event.pump()
         events = pygame.event.get()
 
         for event in events:
             if event.type == pygame.QUIT:
                 running = False
+
         if not paused:
-            for entity in entities:
-                if entity.active:
-                    entity.Update(dt, events)
-                        
+            race_instance.Update(dt, events)
+
         screen.fill((0, 0, 0, 255))
+
+        if race_instance.currentTime <= 0:
+            countdown_text = font.render(f"Countdown: {race_instance.currentTime:.2f}", True, (255, 255, 255))
+        else:
+            # Countdown is over, display live race time
+            racetime = font.render(f"Racetime: {race_instance.currentTime:.2f}", True, (255, 255, 255))
+
+        # Render the appropriate text
+        text_to_render = countdown_text if race_instance.currentTime <= 0 else racetime
+        screen.blit(text_to_render, (300, 150))
+
+
         pygame.display.flip()
+
+    pygame.quit()
