@@ -1,7 +1,16 @@
+from enum import Enum
 from vector2d import Vector2D
 from math import sqrt, cos, sin, radians
 from Utils import RotateVector, RotateVectorAroundPoint
 import sys
+
+
+class Direction(Enum):
+    NONE = -1
+    LEFT = 0
+    TOP = 1
+    RIGHT = 2
+    BOTTOM = 3
 
 class RectangleCollision:
     def __init__(self, position=Vector2D(0, 0), width=0, height=0, rotation=0):
@@ -42,8 +51,6 @@ class RectangleCollision:
         selfPoints = self.GetPoints(self)
         otherPoints = self.GetPoints(other)
         
-        insidePoints = []
-        
         for i in range(2):
             if i == 1:
                 otherPoints, selfPoints = selfPoints, otherPoints
@@ -65,15 +72,67 @@ class RectangleCollision:
                     q = self.Dot(Vector2D(otherPoints[p].x, otherPoints[p].y), axisProjection)
                     minRange2 = min(minRange2, q)
                     maxRange2 = max(maxRange2, q)
-                
-                if maxRange2 >= minRange1 and maxRange1 >= minRange2:
-                    insidePoints.append(selfPoints[a])
                     
                 if not (maxRange2 >= minRange1 and maxRange1 >= minRange2):
                     return False
 
-        return insidePoints
-
+        return True
+    
+    def VerticesInsideOtherShape(self, other):
+        if not hasattr(other, "collider") and not self.CheckCollision(other.collider):
+            return []
+        otherCollider = other.collider
+        rotationFactor = -self.rotation
+        # get points
+        selfAABB = self.GetPoints(self)
+        otherAABB = self.GetPoints(otherCollider)
+        # rotate points around self origin
+        for i in range(4):
+            selfAABB[i] = RotateVectorAroundPoint(selfAABB[i], self.position, rotationFactor, True)
+            otherAABB[i] = RotateVectorAroundPoint(otherAABB[i], self.position, rotationFactor, True)
+        tl = self.position + Vector2D(-self.width/2, -self.height/2)
+        br = self.position + Vector2D(self.width/2, self.height/2)
+        # AABB check for each vertex on the other shape
+        points = []
+        for i in range(4):
+            if otherAABB[i].x >= tl.x and otherAABB[i].x <= br.x and otherAABB[i].y >= tl.y and otherAABB[i].y <= br.y:
+                points.append(RotateVectorAroundPoint(otherAABB[i], self.position, -rotationFactor, True))
+        
+        for p in points:
+            r = RotateVectorAroundPoint(p, self.position, rotationFactor + radians(45), True)
+            dir = Direction.NONE
+            if r.x <= self.position.x and r.y <= self.position.y: # Left
+                print("Left")
+                dir = Direction.LEFT
+            elif r.x <= self.position.x and r.y >= self.position.y: # Bottom
+                print("Bottom")
+                dir = Direction.BOTTOM
+            elif r.x >= self.position.x and r.y <= self.position.y: # Top
+                print("Top")
+                dir = Direction.TOP
+            elif r.x >= self.position.x and r.y >= self.position.y: # Right
+                print("Right")
+                dir = Direction.RIGHT
+            # push rigidbody away from collider
+            if hasattr(other, "rb"):
+                distance = Vector2D(0, 0)
+                if dir == Direction.RIGHT:
+                    vv = Vector2D(p.x - self.position.x, 0) * other.rb.mass
+                    distance = RotateVector(vv, -rotationFactor, True)
+                if dir == Direction.LEFT:
+                    vv = Vector2D(-(p.x - self.position.x), 0) * other.rb.mass
+                    distance = RotateVector(vv, -rotationFactor + radians(180), True)
+                if dir == Direction.TOP:
+                    vv = Vector2D(0, -(p.y - self.position.y)) * other.rb.mass
+                    distance = RotateVector(vv, -rotationFactor + radians(180), True)
+                if dir == Direction.BOTTOM:
+                    vv = Vector2D(0, (p.y - self.position.y)) * other.rb.mass
+                    distance = RotateVector(vv, -rotationFactor, True)
+                other.rb.velocity = Vector2D(0, 0)
+                other.rb.AddForceAtPosition(distance, p)
+            
+            
+        return points
 
 
 if __name__ == "__main__":

@@ -219,7 +219,7 @@ if __name__ == "__main__":
     paused = False
     screenWidth, screenHeight = pygame.display.get_surface().get_size()
     car = Car("UwU", Vector2D(40, 40), 90)
-    wall = Wall(Vector2D(screenWidth//2, screenHeight//2), 10, 450, 0)
+    wall = Wall(Vector2D(screenWidth//2, screenHeight//2), 100, 150, 0)
     entities = [car, wall]
     carImage = pygame.image.load("./assets/sprites/Annett-car2.jpg")
     carRect = carImage.get_rect()
@@ -229,6 +229,7 @@ if __name__ == "__main__":
         events = pygame.event.get()
 
         colliderHit = False
+        pp = []
         
         for event in events:
             if event.type == pygame.QUIT:
@@ -243,7 +244,8 @@ if __name__ == "__main__":
                     entity1 = filteredEntites[i]
                     entity2 = filteredEntites[j]
                     colliderHit = entity1.collider.CheckCollision(entity2.collider)
-                    print(colliderHit)
+                    if isinstance(entity1, Car) and colliderHit:
+                        pp = entity2.collider.VerticesInsideOtherShape(entity1)
                     # if colliderHit != False and isinstance(entity1, Car):
                     #     v1 = entity1.rb.position
                     #     v2 = entity2.collider.position
@@ -261,6 +263,9 @@ if __name__ == "__main__":
             else:
                 pygame.draw.polygon(screen, (255, 255, 255), [(p.x, p.y) for p in points], 1)
             
+            if pp:
+                for p in pp:
+                    pygame.draw.circle(screen, (0, 255, 0), (p.x, p.y), 10)
             
             if isinstance(entity, Car):
                 rotatedTire1 = RotateVector(entity.frontTireOffset[0], entity.rotation, True)
