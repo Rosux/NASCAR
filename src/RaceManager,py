@@ -2,7 +2,7 @@ from vector2d import Vector2D
 from Entity import Entity
 from Utils import clamp
 from random import random
-from CarExample import Car
+from Car import Car
 import math
 import pygame
 
@@ -22,58 +22,39 @@ class Checkpoint:
         return False
 
 class Race(Entity):
-    def __init__(self, cars: list[Car] = []):
+    def __init__(self, cars: list[Car] = [], startPositions: list[Vector2D] = []):
         super().__init__()
+        self.collision = False
         self.cars = cars
-        self.raceLength = 180.0  # (3 minutes)
+        self.startPositions = startPositions
+        self.raceLength = 60.0 # (1 minute)
         self.currentTime = -5.0
-        self.checkpoints = [
-            Checkpoint((100, 100)),
-            Checkpoint((200, 200)),
-            Checkpoint((300, 300))
-        ]
-
+        self.running = False
+        self.runOnce = False
+        for i, car in enumerate(self.cars):
+            car.position = self.startPositions[i]
+            car.Pause()
+        
     def Update(self, deltaTime, events):
         self.currentTime += deltaTime
+        if self.currentTime >= 0.0 and not self.runOnce:
+            self.runOnce = True
+            print("RACE STARTED")
+            self.StartRace()
+        if self.currentTime >= self.raceLength and self.running:
+            print("STOP RACE")
+            self.StopRace()
 
-        # Check if the race is over
-        if self.currentTime >= self.raceLength:
-            pygame.quit()
-
-        # Checkpoint system
+    def StartRace(self):
+        self.running = True
         for car in self.cars:
-            car_position = car.GetPosition()  # Adjust this method based on your Car class
-            for checkpoint in self.checkpoints:
-                if checkpoint.CheckCarPassing(car_position):
-                    car.AddPoints(10)  # Adjust the points based on your preference
-                    print(f"Car {car.GetCarID()} passed a checkpoint!")
-
-            # You can add more logic for handling additional checkpoints or finishing the race
-
-    def StartRace(self):
-        pass
+            car.Start()
 
     def StopRace(self):
-        pass
+        self.running = False
+        for car in self.cars:
+            car.Pause()
 
-    def GetTimeLeft(self):
-        pass
-    
-    def GetTotalTime(self):
-        pass
-
-
-    def StartRace(self):
-        pass
-
-    def StopRace(self):
-        pass
-
-    def GetTimeLeft(self):
-        pass
-    
-    def GetTotalTime(self):
-        pass
 
 
 if __name__ == "__main__":
