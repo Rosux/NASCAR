@@ -2,36 +2,46 @@ from vector2d import Vector2D
 from Entity import Entity
 from Utils import clamp
 from random import random
-from CarExample import Car
+from Car import Car
 import math
 import pygame
 
 
 class Race(Entity):
-    def __init__(self, cars: list[Car] = []):
+    def __init__(self, cars: list[Car] = [], startPositions: list[Vector2D] = []):
         super().__init__()
+        self.collision = False
         self.cars = cars
-        self.raceLength = 180.0 # (3 minutes)
-        self.currentTime = 0.0
+        self.startPositions = startPositions
+        self.raceLength = 60.0 # (1 minute)
+        self.currentTime = -5.0
+        self.running = False
+        self.runOnce = False
+        for i, car in enumerate(self.cars):
+            car.position = self.startPositions[i]
+            car.Pause()
         
     def Update(self, deltaTime, events):
         # dit runt elke frame
         self.currentTime += deltaTime
-        if self.currentTime >= 1.0:
-            print("dit runt elke seconden")
-            self.currentTime = 0
+        if self.currentTime >= 0.0 and not self.runOnce:
+            self.runOnce = True
+            print("RACE STARTED")
+            self.StartRace()
+        if self.currentTime >= self.raceLength and self.running:
+            print("STOP RACE")
+            self.StopRace()
 
     def StartRace(self):
-        pass
+        self.running = True
+        for car in self.cars:
+            car.Start()
 
     def StopRace(self):
-        pass
+        self.running = False
+        for car in self.cars:
+            car.Pause()
 
-    def GetTimeLeft(self):
-        pass
-    
-    def GetTotalTime(self):
-        pass
 
 
 if __name__ == "__main__":

@@ -111,14 +111,19 @@ class Car(Entity):
         self.rearDriftGrip = 0.0
         self.frontGrip = 0.95
         self.rearGrip = 0.95
+        self.paused = False
 
     def GetSpeed(self):
         return self.gearSpeed[self.gear+1]
 
     def ShiftUp(self):
+        if self.paused:
+            return
         self.gear = clamp(self.gear+1, -1, self.maxGears)
 
     def ShifDown(self):
+        if self.paused:
+            return
         self.gear = clamp(self.gear-1, -1, self.maxGears)
 
     def HandleInput(self, deltaTime, events):
@@ -167,6 +172,8 @@ class Car(Entity):
         # print(f"{self.braking} {round(self.brakes, 2)}, {self.accelerating} {round(self.throttle, 2)}, {round(self.steeringAngle, 2)}, {round(self.position.x, 2)} {round(self.position.y, 2)}")
 
     def Update(self, deltaTime, events):
+        if self.paused:
+            return
         self.HandleInput(deltaTime, events)
         
         force = RotateVector(Vector2D(0, -1.0) * self.throttle, self.rotation, True)
@@ -205,10 +212,19 @@ class Car(Entity):
             self.rb.AddForceAtPosition(force, location)
             self.forces.append(force)
             self.tireForces.append(rotatedPushForce)
-            
+        
+        if self.brakes > 0.0:
+            vd = self.rb.velocity_damping
+            self.rb.velocity_damping += 15.0 * self.brakes * 1000 * deltaTime
         self.rb.update(deltaTime)
+        if self.brakes > 0.0:
+            self.rb.velocity_damping = vd
         self.collider.UpdatePositions(self.rb.position, self.rb.orientation)
 
+    def Pause(self):
+        self.paused = True
+    def Start(self):
+        self.paused = False
 
 if __name__ == "__main__":
     pygame.display.init()
@@ -218,8 +234,10 @@ if __name__ == "__main__":
     running = True
     paused = False
     screenWidth, screenHeight = pygame.display.get_surface().get_size()
+    
     car = Car("UwU", Vector2D(40, 40), 90)
     wall = Wall(Vector2D(screenWidth//2, screenHeight//2), 100, 150, 0)
+    
     entities = [car, wall]
     carImage = pygame.image.load("./assets/sprites/Annett-car2.jpg")
     carRect = carImage.get_rect()

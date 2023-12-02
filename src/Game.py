@@ -3,16 +3,18 @@ from vector2d import Vector2D
 from Utils import clamp
 from Entity import Entity
 from enum import Enum
+from Car import Car
+from Wall import Wall
+from RaceManager import Race
 
 
 class Game:
     def __init__(self):
         pygame.display.init()
-        self.screen = pygame.display.set_mode((720, 480), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
         pygame.display.set_caption("NASCAR")
         self.clock = pygame.time.Clock()
         self.running = True
-        self.paused = False
         self.entities = []
 
     def AddEntity(self, entity):
@@ -44,7 +46,6 @@ class Game:
             # dont limit fps. we have deltaTime to calculate stuff
             dt = self.clock.tick(0) / 1000.0
             # print(self.clock.get_fps())
-            # if user presses the quit button stop game
             pygame.event.pump()
             events = pygame.event.get()
             for event in events:
@@ -52,17 +53,31 @@ class Game:
                     self.running = False
 
             # run update method on all entities
-            if not self.paused:
                 for entity in self.entities:
                     if entity.active:
                         entity.Update(dt, events)
-            if not self.paused:
-                self.DrawScene(dt)
-            else:
-                self.DrawScene(0)
-
+                filteredEntites = [e for e in self.entities if e.active and e.collision and hasattr(e, "collider")]
+                for i in range(len(filteredEntites)):
+                    for j in range(i+1, len(filteredEntites)):
+                        entity1 = filteredEntites[i]
+                        entity2 = filteredEntites[j]
+                        colliderHit = entity1.collider.CheckCollision(entity2.collider)
+                        if isinstance(entity1, Car) and colliderHit:
+                            pp = entity2.collider.VerticesInsideOtherShape(entity1)
+                        if isinstance(entity2, Car) and colliderHit:
+                            pp = entity1.collider.VerticesInsideOtherShape(entity2)
             # clear screen then draw new stuff to screen
             self.screen.fill((0, 0, 0, 255))
+            
+            self.DrawScene()
+            self.DrawRaceStats()
 
-    def DrawScene(self, deltaTime):
+            pygame.display.flip()
+
+    def DrawScene(self):
+        # teken autos hierzo en weg
+        pass
+
+    def DrawRaceStats(self):
+        # teken racemanager ui hier zoals tijd over, punten, positie, etc
         pass
