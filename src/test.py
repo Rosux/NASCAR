@@ -24,8 +24,10 @@ class Engine(Entity):
         self.oldRandomFactor = random.uniform(0, 450)
 
     def ShiftUp(self):
-        self.currentGear = clamp(self.currentGear+1, -1, self.maxGear)
-        self.rpm -= self.minRpm
+       if self.currentGear == 0 or self.currentGear == -1 or self.speed >= 0.8 * self.speed_limit:  # Allow upshifting only if speed is at least 80% of the speed limit
+            self.currentGear = clamp(self.currentGear + 1, -1, self.maxGear)
+            self.rpm -= self.minRpm
+
 
     def ShifDown(self):
         self.currentGear = clamp(self.currentGear-1, -1, self.maxGear)
@@ -45,7 +47,21 @@ class Engine(Entity):
         deceleration_factor = 1.5  # Adjust this factor based on your preference
 
         if keys[pygame.K_UP]:
+            if self.currentGear == 0:
+                acceleration_factor = 0
+            elif self.currentGear == 1:
+                self.speed_limit = 80
+            elif self.currentGear ==2:
+                self.speed_limit = 160
+            elif self.currentGear == 3:
+                self.speed_limit = 240
+            elif self.currentGear == 4:
+                self.speed_limit = 320
+            elif self.currentGear == -1:
+                self.speed_limit = 30
             self.speed = min(self.speed + acceleration_factor * 60 * deltaTime, self.speed_limit)
+            
+            
             # Fix gear based on self.speed and adjust rpm
             self.rpm += 100 * 60 * deltaTime
             self.rpm = min(self.rpm, self.rpm_limit)
@@ -64,7 +80,7 @@ class Engine(Entity):
 
     def GetRpm(self):
         self.xxx += 1
-        if self.xxx >= 90:
+        if self.xxx >= 10:
             self.xxx = 0
             self.oldRandomFactor = random.uniform(0, 250)
         return min(self.rpm + self.oldRandomFactor, self.rpm_limit)
@@ -79,8 +95,8 @@ if __name__ == "__main__":
     pygame.init()
 
     # Set up display
-    width, height = 1000, 800
-    screen = pygame.display.set_mode((width, height))
+    width, height = 1200, 1000
+    screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
     pygame.display.set_caption("Speedometer")
     
     entities = [engine]
@@ -89,51 +105,50 @@ if __name__ == "__main__":
     
     clock = pygame.time.Clock()
     while True:
-        dt = clock.tick(0) / 1000.0
+        dt = clock.tick(60) / 1000.0  # Set the frame rate to 60 FPS
         pygame.event.pump()
         events = pygame.event.get()
+
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            elif event.type == pygame.VIDEORESIZE:
+                width, height = event.size
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+
         for entity in entities:
             if entity.active:
                 entity.Update(dt, events)
-        # Update the display
-        screen.fill((0, 0, 0))
-        # Draw speedometer background
-        pygame.draw.circle(screen, (255, 255, 255), (width // 1.5, height // 2), 150)
-        pygame.draw.circle(screen, (0, 0, 0), (width // 1.5, height // 2), 140)
 
-        # Draw rpmmeter background
-        pygame.draw.circle(screen, (255, 255, 255), (width // 3, height // 2), 150)
-        pygame.draw.circle(screen, (0, 0, 0), (width // 3, height // 2), 140)
+        # Update the display
+        screen.fill((255, 255, 255))
+
+        # Draw speedometer background
+        center_x, center_y = width // 2, height - (height // 40)
+        pygame.draw.circle(screen, (128, 128, 128), (center_x -  min(width // 4, height // 4), center_y), min(width // 4, height // 4), 2)
+        pygame.draw.circle(screen, (255, 255, 255), (center_x -  min(width // 4, height // 4), center_y), min(width // 4, height // 4) - 10)
+
+        # Draw rpm meter background
+        center_x, center_y = width // 2, height - (height // 40)
+        pygame.draw.circle(screen, (128, 128, 128), (center_x + min(width // 4, height // 4), center_y), min(width // 4, height // 4),2 )
+        pygame.draw.circle(screen, (255, 255, 255), (center_x + min(width // 4, height // 4), center_y), min(width // 4, height // 4) - 10)
 
         # Draw speedometer needle
-        angle = 180 - (engine.speed / engine.speed_limit) * 180  # Convert speed to angle (180 to 0 degrees)
+        angle = 180 - (engine.speed / engine.speed_limit) * 180
         angle_rad = math.radians(angle)
-        needle_length = 120
-        end_point = (width // 1.5 + needle_length * math.cos(angle_rad), height // 2 - needle_length * math.sin(angle_rad))
-        pygame.draw.line(screen, (255, 0, 0), (width // 1.5, height // 2), (int(end_point[0]), int(end_point[1])), 5)
-
-        # Display speed value
-        speed_text = font.render(f"Speed: {int(engine.speed)}", True, (255, 255, 255))
-        screen.blit(speed_text, (625, 150))
+        needle_length = min(width // 4, height // 4) - 20
+        end_point = ((center_x + min(width // 4, height // 4)) + needle_length * math.cos(angle_rad), center_y - needle_length * math.sin(angle_rad))
+        pygame.draw.line(screen, (255, 0, 0), (center_x + min(width // 4, height // 4), center_y), (int(end_point[0]), int(end_point[1])), 5)
 
         # Draw rpm needle
-        angle = 180 - (engine.GetRpm() / engine.rpm_limit) * 180  # Convert RPM to angle (180 to 0 degrees)
+        angle = 180 - (engine.GetRpm() / engine.rpm_limit) * 180
         angle_rad = math.radians(angle)
-        end_point = (width // 3 + needle_length * math.cos(angle_rad), height // 2 - needle_length * math.sin(angle_rad))
-        pygame.draw.line(screen, (255, 0, 0), (width // 3, height // 2), (int(end_point[0]), int(end_point[1])), 5)
-
-        # Display rpm value
-        rpm_text = font.render(f"Rpm: {int(engine.GetRpm())}", True, (255, 255, 255))
-        screen.blit(rpm_text, (300, 150))
+        end_point = ((center_x - min(width // 4, height // 4)) + needle_length * math.cos(angle_rad), center_y - needle_length * math.sin(angle_rad))
+        pygame.draw.line(screen, (255, 0, 0), (center_x - min(width // 4, height // 4), center_y), (int(end_point[0]), int(end_point[1])), 5)
 
         # Display current gear
-        gear_text = font.render(f"Gear: {engine.currentGear}", True, (255, 255, 255))
-        screen.blit(gear_text, (width // 2 - gear_text.get_width() // 2, height - 100))
-        
+        gear_text = font.render(f"Gear: {engine.currentGear}", True, (0, 0, 0))
+        screen.blit(gear_text, (width // 2 - gear_text.get_width() // 2, height - (height // 5)))
 
         pygame.display.flip()
-

@@ -7,6 +7,20 @@ import math
 import pygame
 
 
+class Checkpoint:
+    def __init__(self, position, radius=10):
+        self.position = position
+        self.radius = radius
+        self.is_passed = False
+
+    def CheckCarPassing(self, car_position):
+        if not self.is_passed:
+            distance_to_checkpoint = math.dist(car_position, self.position)
+            if distance_to_checkpoint < self.radius:
+                self.is_passed = True
+                return True
+        return False
+
 class Race(Entity):
     def __init__(self, cars: list[Car] = [], startPositions: list[Vector2D] = []):
         super().__init__()
@@ -22,7 +36,6 @@ class Race(Entity):
             car.Pause()
 
     def Update(self, deltaTime, events):
-        # dit runt elke frame
         self.currentTime += deltaTime
         if self.currentTime >= 0.0 and not self.runOnce:
             self.runOnce = True
@@ -47,7 +60,8 @@ class Race(Entity):
 
 
 if __name__ == "__main__":
-    pygame.display.init()
+    pygame.init()  # Initialize Pygame
+    font = pygame.font.Font(None, 36)
     screen = pygame.display.set_mode((720, 480), pygame.RESIZABLE)
     pygame.display.set_caption("NASCAR")
     clock = pygame.time.Clock()
@@ -62,17 +76,30 @@ if __name__ == "__main__":
 
     entities = [RACE]
     while running:
-        dt = clock.tick(0) / 1000.0
+        dt = clock.tick(60) / 1000.0  # Cap the frame rate at 60 frames per second
         pygame.event.pump()
         events = pygame.event.get()
 
         for event in events:
             if event.type == pygame.QUIT:
                 running = False
+
         if not paused:
-            for entity in entities:
-                if entity.active:
-                    entity.Update(dt, events)
-                        
+            race_instance.Update(dt, events)
+
         screen.fill((0, 0, 0, 255))
+
+        if race_instance.currentTime <= 0:
+            countdown_text = font.render(f"Countdown: {race_instance.currentTime:.2f}", True, (255, 255, 255))
+        else:
+            # Countdown is over, display live race time
+            racetime = font.render(f"Racetime: {race_instance.currentTime:.2f}", True, (255, 255, 255))
+
+        # Render the appropriate text
+        text_to_render = countdown_text if race_instance.currentTime <= 0 else racetime
+        screen.blit(text_to_render, (300, 150))
+
+
         pygame.display.flip()
+
+    pygame.quit()

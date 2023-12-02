@@ -1,7 +1,7 @@
 from vector2d import Vector2D
 from Entity import Entity
 from Utils import clamp, RotateVector, clampVector, Magnitude, Dot
-from random import random
+from random import random, uniform
 from Collision import RectangleCollision
 from RigidBody2D import RigidBody2D
 from Wall import Wall
@@ -95,7 +95,12 @@ class Car(Entity):
             Vector2D(-11.5, 30),
         ]
         self.driveType = DriveType.REAR
-
+        self.rpm = 0
+        self.rpm_limit = 9000
+        self.minRpm = 2000
+        self.maxRpm = 6500
+        self.xxx = 0
+        self.oldRandomFactor = uniform(0, 450)
         # settings
         # gear -1 = reverse
         # gear 0 = neutral
@@ -113,6 +118,13 @@ class Car(Entity):
         self.rearGrip = 0.95
         self.paused = False
 
+    def GetRpm(self):
+        self.xxx += 1
+        if self.xxx >= 10:
+            self.xxx = 0
+            self.oldRandomFactor = uniform(0, 250)
+        return min(self.rpm + self.oldRandomFactor, self.rpm_limit)
+    
     def GetSpeed(self):
         return self.gearSpeed[self.gear+1]
 
@@ -120,11 +132,15 @@ class Car(Entity):
         if self.paused:
             return
         self.gear = clamp(self.gear+1, -1, self.maxGears)
+        if self.gear != self.maxGears:
+            self.rpm -= self.minRpm
 
     def ShifDown(self):
         if self.paused:
             return
         self.gear = clamp(self.gear-1, -1, self.maxGears)
+        if self.gear != -1:
+            self.rpm += self.minRpm
 
     def HandleInput(self, deltaTime, events):
         keys = pygame.key.get_pressed()
@@ -152,9 +168,12 @@ class Car(Entity):
             self.steeringAngle = clamp(self.steeringAngle + (self.steeringReturnSpeed * deltaTime), -1.0, 1.0)
         # handle throttle and braking input
         if keys[pygame.K_UP]:
+            self.rpm += 100 * 60 * deltaTime
+            self.rpm = min(self.rpm, self.rpm_limit)
             self.accelerating = True
             self.throttle = clamp(self.throttle + (self.throttleSpeed * deltaTime), 0.0, 1.0)
         else:
+            self.rpm = max(self.rpm - 100 * 60 * deltaTime, self.minRpm)
             self.accelerating = False
             self.throttle = clamp(self.throttle - (self.throttleSpeed * deltaTime), 0.0, 1.0)
         if keys[pygame.K_DOWN]:
@@ -220,6 +239,7 @@ class Car(Entity):
         if self.brakes > 0.0:
             self.rb.velocity_damping = vd
         self.collider.UpdatePositions(self.rb.position, self.rb.orientation)
+        return self.rb.velocity
 
     def Pause(self):
         self.paused = True
