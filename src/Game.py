@@ -6,6 +6,7 @@ from enum import Enum
 from Car import Car
 from Wall import Wall
 from RaceManager import Race
+import math
 
 
 class Game:
@@ -15,7 +16,11 @@ class Game:
         pygame.display.set_caption("NASCAR")
         self.clock = pygame.time.Clock()
         self.running = True
-        self.entities = []
+        car1 = Car("Player", Vector2D(100, 100), 0)
+        self.entities = [
+            car1,
+            Wall(Vector2D(0, 0), 50, 50, 45),
+        ]
 
     def AddEntity(self, entity):
         self.entities.append(entity)
@@ -53,19 +58,19 @@ class Game:
                     self.running = False
 
             # run update method on all entities
-                for entity in self.entities:
-                    if entity.active:
-                        entity.Update(dt, events)
-                filteredEntites = [e for e in self.entities if e.active and e.collision and hasattr(e, "collider")]
-                for i in range(len(filteredEntites)):
-                    for j in range(i+1, len(filteredEntites)):
-                        entity1 = filteredEntites[i]
-                        entity2 = filteredEntites[j]
-                        colliderHit = entity1.collider.CheckCollision(entity2.collider)
-                        if isinstance(entity1, Car) and colliderHit:
-                            pp = entity2.collider.VerticesInsideOtherShape(entity1)
-                        if isinstance(entity2, Car) and colliderHit:
-                            pp = entity1.collider.VerticesInsideOtherShape(entity2)
+            for entity in self.entities:
+                if entity.active:
+                    entity.Update(dt, events)
+            filteredEntites = [e for e in self.entities if e.active and e.collision and hasattr(e, "collider")]
+            for i in range(len(filteredEntites)):
+                for j in range(i+1, len(filteredEntites)):
+                    entity1 = filteredEntites[i]
+                    entity2 = filteredEntites[j]
+                    colliderHit = entity1.collider.CheckCollision(entity2.collider)
+                    if isinstance(entity1, Car) and colliderHit:
+                        entity2.collider.VerticesInsideOtherShape(entity1)
+                    if isinstance(entity2, Car) and colliderHit:
+                        entity1.collider.VerticesInsideOtherShape(entity2)
             # clear screen then draw new stuff to screen
             self.screen.fill((0, 0, 0, 255))
             
@@ -75,8 +80,23 @@ class Game:
             pygame.display.flip()
 
     def DrawScene(self):
-        # teken autos hierzo en weg
-        pass
+        width, height = pygame.display.get_surface().get_size()
+        player = Vector2D(0, 0)
+        for car in self.entities:
+            if isinstance(car, Car) and car.name == "Player":
+                player = car.position
+                break
+        offset = player
+        for entity in self.entities:
+            if isinstance(entity, Car):
+                img = pygame.image.load("./assets/sprites/pitstop_car_10.png")
+                img = pygame.transform.scale(img, (entity.rb.width, entity.rb.height))
+                img = pygame.transform.rotate(img,- math.degrees(entity.rotation)+180)
+                rect = img.get_rect(center=(entity.position.x-offset.x+(width//2), entity.position.y-offset.y+(height//2)))
+                self.screen.blit(img, rect.topleft)
+            if isinstance(entity, Wall):
+                points = entity.collider.GetPoints(entity.collider)
+                pygame.draw.polygon(self.screen, (255, 0, 0), [(p.x-offset.x+(width//2), p.y-offset.y+(height//2)) for p in points], 1)
 
     def DrawRaceStats(self):
         # teken racemanager ui hier zoals tijd over, punten, positie, etc

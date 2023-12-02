@@ -62,8 +62,8 @@ class Car(Entity):
             # tireWear: float = 0.75,
             # bodyWear: float = 0.9,
             # controlls
-            steeringSpeed: float = 15.0, # how fast the wheel turns
-            steeringReturnSpeed: float = 15.0, # how fast the wheel turns back to center
+            steeringSpeed: float = 1.0, # how fast the wheel turns
+            steeringReturnSpeed: float = 1.0, # how fast the wheel turns back to center
             throttleSpeed: float = 0.6, # how fast the throttle goes up and down
             brakingSpeed: float = 0.4, # how fast the brake pedal goes up and down
             maxSteeringAngle: float = 45.0, # maximum steering angle in degrees
@@ -239,8 +239,6 @@ if __name__ == "__main__":
     wall = Wall(Vector2D(screenWidth//2, screenHeight//2), 100, 150, 0)
     
     entities = [car, wall]
-    carImage = pygame.image.load("./assets/sprites/Annett-car2.jpg")
-    carRect = carImage.get_rect()
     while running:
         dt = clock.tick(0) / 1000.0
         pygame.event.pump()

@@ -20,7 +20,7 @@ class Race(Entity):
         for i, car in enumerate(self.cars):
             car.position = self.startPositions[i]
             car.Pause()
-        
+
     def Update(self, deltaTime, events):
         # dit runt elke frame
         self.currentTime += deltaTime
@@ -41,6 +41,8 @@ class Race(Entity):
         self.running = False
         for car in self.cars:
             car.Pause()
+    
+        
 
 
 
@@ -52,12 +54,12 @@ if __name__ == "__main__":
     running = True
     paused = False
     screenWidth, screenHeight = pygame.display.get_surface().get_size()
-    
-    
+
+
     # verander dit
     RACE = Race()
-    
-    
+
+
     entities = [RACE]
     while running:
         dt = clock.tick(0) / 1000.0
