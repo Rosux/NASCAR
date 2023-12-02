@@ -80,7 +80,7 @@ class Engine(Entity):
 
     def GetRpm(self):
         self.xxx += 1
-        if self.xxx >= 90:
+        if self.xxx >= 10:
             self.xxx = 0
             self.oldRandomFactor = random.uniform(0, 250)
         return min(self.rpm + self.oldRandomFactor, self.rpm_limit)
