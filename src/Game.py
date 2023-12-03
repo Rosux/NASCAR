@@ -28,20 +28,14 @@ class Game:
         # car2 = CarPlayerTwo("Player2", Vector2D(70, -60), 0)
         # carAI = CarPlayerTwo("Player", Vector2D(70, -60), 0)
         self.finish = Wall(Vector2D(0, -10300), 600, 600, 0)
-        self.entities = [
-            Car("Player", Vector2D(-70, -60), 0),
-            CarPlayerTwo("Player2", Vector2D(70, -60), 0),
-            Wall(Vector2D(0, 300), 600, 600, 0),
-            Wall(Vector2D(250, -5000), 200, 10000, 0),
-            Wall(Vector2D(-250, -5000), 200, 10000, 0),
-        ]
+        self.entities = []
         pygame.font.init()
         self.font = pygame.font.Font(None, 36)
         self.speed_limit = 320
         # sprites
         self.car1 = pygame.image.load("./assets/sprites/pitstop_car_10.png")
         self.car2 = pygame.image.load("./assets/sprites/pitstop_car_1.png")
-        self.background = pygame.image.load("./assets/sprites/Dragstrip.png")
+        self.background = pygame.image.load("./assets/sprites/Dragstripfinish.png")
         self.currentScene = Scene.MAINMENU
         self.currentSelection = 0
         self.currentTime = -5.0
@@ -175,6 +169,7 @@ class Game:
                             Wall(Vector2D(-250, -5000), 200, 10000, 0),
                         ]
                         self.currentScene = Scene.RACE
+                        self.currentTime = -5.0
                     if self.currentSelection == 1: # 2 players
                         self.entities = [
                             Car("Player", Vector2D(70, -60), 0),
@@ -184,6 +179,7 @@ class Game:
                             Wall(Vector2D(-250, -5000), 200, 10000, 0),
                         ]
                         self.currentScene = Scene.RACE
+                        self.currentTime = -5.0
                     if self.currentSelection == 2: # quit
                         self.running = False
         
@@ -213,9 +209,9 @@ class Game:
                 img = pygame.transform.rotate(img,- math.degrees(entity.rotation)+180)
                 rect = img.get_rect(center=(entity.position.x-offset.x+(width//2), entity.position.y-offset.y+(height//2)))
                 self.screen.blit(img, rect.topleft)
-            if isinstance(entity, Wall):
-                points = entity.collider.GetPoints(entity.collider)
-                pygame.draw.polygon(self.screen, (255, 0, 0), [(p.x-offset.x+(width//2), p.y-offset.y+(height//2)) for p in points], 1)
+            # if isinstance(entity, Wall):
+            #     points = entity.collider.GetPoints(entity.collider)
+            #     pygame.draw.polygon(self.screen, (255, 0, 0), [(p.x-offset.x+(width//2), p.y-offset.y+(height//2)) for p in points], 1)
 
     def DrawStats(self):
         screenWidth, screenHeight = pygame.display.get_surface().get_size()
