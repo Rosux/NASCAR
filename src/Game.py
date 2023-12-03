@@ -225,6 +225,10 @@ class Game:
             player2 = multuplePlayers[1].position
             player = Vector2D((player1.x + player2.x) / 2, (player1.y + player2.y) / 2)
         offset = player
+        # remove
+        f = [c for c in self.entities if isinstance(c, CarAI)]
+        offset = f[0].position
+        # remove ^
         img = self.background
         img = pygame.transform.scale(img, (img.get_width() * 2, img.get_height() * 2))
         rect = img.get_rect(midbottom=(0-offset.x+(width//2), 0-offset.y+(height//2)))

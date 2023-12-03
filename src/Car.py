@@ -137,7 +137,7 @@ class Car(Entity):
 
     def ShiftUp(self):
         print(self.speef)
-        if self.gear == 0 or self.gear == -1 or self.GetSpeef() >= 0.8 * self.speed_limit:    
+        if self.gear == 0 or self.gear == -1 or self.GetSpeef() >= 0.7 * self.speed_limit:    
             if self.paused:
                 return
             self.gear = clamp(self.gear+1, -1, self.maxGears)
@@ -182,11 +182,11 @@ class Car(Entity):
             self.accelerating = True
             self.throttle = clamp(self.throttle + (self.throttleSpeed * deltaTime), 0.0, 1.0)
             if self.gear == 1:
-                self.speed_limit = 80
-            elif self.gear ==2:
-                self.speed_limit = 160
+                self.speed_limit = 68
+            elif self.gear == 2:
+                self.speed_limit = 135
             elif self.gear == 3:
-                self.speed_limit = 240
+                self.speed_limit = 200
             elif self.gear == 4:
                 self.speed_limit = 320
             elif self.gear == -1:
