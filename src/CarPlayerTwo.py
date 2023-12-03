@@ -14,7 +14,7 @@ class DriveType(Enum):
     FRONT = 1
     REAR = 2
 
-class Car(Entity):
+class CarPlayerTwo(Entity):
     
     @property
     def position(self):
@@ -148,18 +148,18 @@ class Car(Entity):
         # keypresses
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RSHIFT:
+                if event.key == pygame.K_LSHIFT:
                     self.ShiftUp()
-                if event.key == pygame.K_RCTRL:
+                if event.key == pygame.K_LCTRL:
                     self.ShifDown()
         # handle steering input
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_d]:
             self.steering = True
             self.steeringAngle = clamp(self.steeringAngle - (self.steeringSpeed * deltaTime), -1.0, 1.0)
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_a]:
             self.steering = True
             self.steeringAngle = clamp(self.steeringAngle + (self.steeringSpeed * deltaTime), -1.0, 1.0)
-        if not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
+        if not keys[pygame.K_d] and not keys[pygame.K_a]:
             self.steering = False
         # turn steering wheel back if user isnt controlling it
         if self.steeringAngle > 0.0 and not self.steering:
@@ -167,7 +167,7 @@ class Car(Entity):
         if self.steeringAngle < 0.0 and not self.steering:
             self.steeringAngle = clamp(self.steeringAngle + (self.steeringReturnSpeed * deltaTime), -1.0, 1.0)
         # handle throttle and braking input
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_w]:
             self.rpm += 100 * 60 * deltaTime
             self.rpm = min(self.rpm, self.rpm_limit)
             self.accelerating = True
@@ -176,14 +176,14 @@ class Car(Entity):
             self.rpm = max(self.rpm - 100 * 60 * deltaTime, self.minRpm)
             self.accelerating = False
             self.throttle = clamp(self.throttle - (self.throttleSpeed * deltaTime), 0.0, 1.0)
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_s]:
             self.braking = True
             self.brakes = clamp(self.brakes + (self.brakingSpeed * deltaTime), 0.0, 1.0)
         else:
             self.braking = False
             self.brakes = clamp(self.brakes - (self.brakingSpeed * deltaTime), 0.0, 1.0)
         # handbrake (drift king)
-        if keys[pygame.K_RETURN]:
+        if keys[pygame.K_SPACE]:
             self.handBrake = True
         else:
             self.handBrake = False

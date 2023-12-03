@@ -4,6 +4,7 @@ from Utils import clamp, Magnitude
 from Entity import Entity
 from enum import Enum
 from Car import Car
+from CarPlayerTwo import CarPlayerTwo
 from Wall import Wall
 from RaceManager import Race
 import math
@@ -17,8 +18,10 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         car1 = Car("Player", Vector2D(100, 100), 0)
+        car2 = CarPlayerTwo("Player", Vector2D(150, 150), 0)
         self.entities = [
             car1,
+            car2,
             Wall(Vector2D(0, 0), 50, 50, 45),
         ]
         self.speed_limit = 320
@@ -70,6 +73,9 @@ class Game:
                     entity1 = filteredEntites[i]
                     entity2 = filteredEntites[j]
                     colliderHit = entity1.collider.CheckCollision(entity2.collider)
+                    if (isinstance(entity1, Car) or isinstance(entity1, CarPlayerTwo)) and (isinstance(entity2, Car) or isinstance(entity2, CarPlayerTwo)):
+                        entity2.collider.VerticesInsideOtherShape(entity1)
+                        entity1.collider.VerticesInsideOtherShape(entity2)
                     if isinstance(entity1, Car) and colliderHit:
                         entity2.collider.VerticesInsideOtherShape(entity1)
                     if isinstance(entity2, Car) and colliderHit:
@@ -92,7 +98,7 @@ class Game:
                 break
         offset = player
         for entity in self.entities:
-            if isinstance(entity, Car):
+            if isinstance(entity, Car) or isinstance(entity, CarPlayerTwo):
                 img = pygame.image.load("./assets/sprites/pitstop_car_10.png")
                 img = pygame.transform.scale(img, (entity.rb.width, entity.rb.height))
                 img = pygame.transform.rotate(img,- math.degrees(entity.rotation)+180)

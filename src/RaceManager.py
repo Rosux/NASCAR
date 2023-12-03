@@ -85,18 +85,18 @@ if __name__ == "__main__":
                 running = False
 
         if not paused:
-            race_instance.Update(dt, events)
+            entities[0].Update(dt, events)
 
         screen.fill((0, 0, 0, 255))
 
-        if race_instance.currentTime <= 0:
-            countdown_text = font.render(f"Countdown: {race_instance.currentTime:.2f}", True, (255, 255, 255))
+        if entities[0].currentTime <= 0:
+            countdown_text = font.render(f"Countdown: {entities[0].currentTime:.2f}", True, (255, 255, 255))
         else:
             # Countdown is over, display live race time
-            racetime = font.render(f"Racetime: {race_instance.currentTime:.2f}", True, (255, 255, 255))
+            racetime = font.render(f"Racetime: {entities[0].currentTime:.2f}", True, (255, 255, 255))
 
         # Render the appropriate text
-        text_to_render = countdown_text if race_instance.currentTime <= 0 else racetime
+        text_to_render = countdown_text if entities[0].currentTime <= 0 else racetime
         screen.blit(text_to_render, (300, 150))
 
 
