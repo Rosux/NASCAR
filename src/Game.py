@@ -7,7 +7,6 @@ from Car import Car
 from CarPlayerTwo import CarPlayerTwo
 from CarAi import CarAI
 from Wall import Wall
-from RaceManager import Race
 from Collision import RectangleCollision
 import UI.Utils as Utils
 import math
