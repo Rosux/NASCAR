@@ -35,10 +35,9 @@ class Game:
             Wall(Vector2D(250, -5000), 200, 10000, 0),
             Wall(Vector2D(-250, -5000), 200, 10000, 0),
         ]
-        self.speed_limit = 320
         pygame.font.init()
         self.font = pygame.font.Font(None, 36)
-        
+        self.speed_limit = 320
         # sprites
         self.car1 = pygame.image.load("./assets/sprites/pitstop_car_10.png")
         self.car2 = pygame.image.load("./assets/sprites/pitstop_car_1.png")
@@ -244,13 +243,9 @@ class Game:
                 center_x, center_y = width // 2, height - (height // 40)
                 pygame.draw.circle(self.screen, (128, 128, 128), (center_x + min(width // 4, height // 4), center_y), min(width // 4, height // 4),2 )
                 pygame.draw.circle(self.screen, (255, 255, 255), (center_x + min(width // 4, height // 4), center_y), min(width // 4, height // 4) - 10)
-                
-                #draw speef
-                cc = car.rb.GetPointVelocity(car.rb.position)
-                speef = (Magnitude(cc) / 1500) * 300
-
-                # # Draw speedometer needle
-                angle = 180 - (speef / self.speed_limit) * 180
+            
+                # Draw speedometer needle
+                angle = 180 - (car.GetSpeef()/ car.speed_limit) * 180
                 angle_rad = math.radians(angle)
                 needle_length = min(width // 4, height // 4) - 20
                 end_point = ((center_x + min(width // 4, height // 4)) + needle_length * math.cos(angle_rad), center_y - needle_length * math.sin(angle_rad))
@@ -263,8 +258,8 @@ class Game:
                 pygame.draw.line(self.screen, (255, 0, 0), (center_x - min(width // 4, height // 4), center_y), (int(end_point[0]), int(end_point[1])), 5)
                 
                 # Display speed
-                gear_text = self.font.render(f"Speed: {int(speef)}", True, (0, 0, 0))
-                self.screen.blit(gear_text, (width // 2 - gear_text.get_width() // 2 + (width // 7), height - (height // 6)))
+                gear_text = self.font.render(f"Speed: {int(car.GetSpeef())}", True, (0, 0, 0))
+                self.screen.blit(gear_text, (width // 2 - gear_text.get_width() // 2 + (width // 7), height - (height // 5)))
                 
                 # Display rpm value
                 rpm_text = self.font.render(f"Rpm: {int(car.GetRpm())}", True, (0, 0, 0))

@@ -39,7 +39,7 @@ class Race(Entity):
         self.currentTime += deltaTime
         if self.currentTime >= 0.0 and not self.runOnce:
             self.runOnce = True
-            print("RACE STARTED")
+            print("DRAG RACE STARTED")
             self.StartRace()
         if self.currentTime >= self.raceLength and self.running:
             print("STOP RACE")
