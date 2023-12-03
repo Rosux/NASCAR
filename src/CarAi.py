@@ -14,7 +14,7 @@ class DriveType(Enum):
     FRONT = 1
     REAR = 2
 
-class Car(Entity):
+class CarAi(Entity):
     
     @property
     def position(self):
@@ -85,7 +85,6 @@ class Car(Entity):
         self.brakes = 0.0
         self.accelerating = False
         self.throttle = 0.0
-        self.speef = 0
         # meta data
         self.frontTireOffset = [
             Vector2D(11.5, -30),
@@ -120,11 +119,6 @@ class Car(Entity):
         self.rearGrip = 0.95
         self.paused = False
     
-    def GetSpeef(self):
-        cc = self.rb.GetPointVelocity(self.rb.position)
-        self.speef = (Magnitude(cc) / 1500) * 300
-        return self.speef
-    
     def GetRpm(self):
         self.xxx += 1
         if self.xxx >= 10:
@@ -136,13 +130,11 @@ class Car(Entity):
         return self.gearSpeed[self.gear+1]
 
     def ShiftUp(self):
-        print(self.speef)
-        if self.gear == 0 or self.gear == -1 or self.GetSpeef() >= 0.8 * self.speed_limit:    
-            if self.paused:
-                return
-            self.gear = clamp(self.gear+1, -1, self.maxGears)
-            if self.gear != self.maxGears:
-                self.rpm -= self.minRpm
+        if self.paused:
+            return
+        self.gear = clamp(self.gear+1, -1, self.maxGears)
+        if self.gear != self.maxGears:
+            self.rpm -= self.minRpm
 
     def ShifDown(self):
         if self.paused:
@@ -152,62 +144,30 @@ class Car(Entity):
             self.rpm += self.minRpm
 
     def HandleInput(self, deltaTime, events):
-        keys = pygame.key.get_pressed()
-        
-        # keypresses
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RSHIFT:
-                    self.ShiftUp()
-                if event.key == pygame.K_RCTRL:
-                    self.ShifDown()
-        # handle steering input
-        if keys[pygame.K_LEFT]:
-            self.steering = True
-            self.steeringAngle = clamp(self.steeringAngle - (self.steeringSpeed * deltaTime), -1.0, 1.0)
-        if keys[pygame.K_RIGHT]:
-            self.steering = True
-            self.steeringAngle = clamp(self.steeringAngle + (self.steeringSpeed * deltaTime), -1.0, 1.0)
-        if not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
-            self.steering = False
-        # turn steering wheel back if user isnt controlling it
-        if self.steeringAngle > 0.0 and not self.steering:
-            self.steeringAngle = clamp(self.steeringAngle - (self.steeringReturnSpeed * deltaTime), -1.0, 1.0)
-        if self.steeringAngle < 0.0 and not self.steering:
-            self.steeringAngle = clamp(self.steeringAngle + (self.steeringReturnSpeed * deltaTime), -1.0, 1.0)
-        # handle throttle and braking input
-        if keys[pygame.K_UP]:
-            self.rpm += 100 * 60 * deltaTime
-            self.rpm = min(self.rpm, self.rpm_limit)
-            self.accelerating = True
-            self.throttle = clamp(self.throttle + (self.throttleSpeed * deltaTime), 0.0, 1.0)
-            if self.gear == 1:
-                self.speed_limit = 80
-            elif self.gear ==2:
-                self.speed_limit = 160
-            elif self.gear == 3:
-                self.speed_limit = 240
-            elif self.gear == 4:
-                self.speed_limit = 320
-            elif self.gear == -1:
-                self.speed_limit = 30
-        else:
-            self.rpm = max(self.rpm - 100 * 60 * deltaTime, self.minRpm)
-            self.accelerating = False
-            self.throttle = clamp(self.throttle - (self.throttleSpeed * deltaTime), 0.0, 1.0)
-        if keys[pygame.K_DOWN]:
-            self.braking = True
-            self.brakes = clamp(self.brakes + (self.brakingSpeed * deltaTime), 0.0, 1.0)
-        else:
-            self.braking = False
-            self.brakes = clamp(self.brakes - (self.brakingSpeed * deltaTime), 0.0, 1.0)
-        # handbrake (drift king)
-        if keys[pygame.K_RETURN]:
-            self.handBrake = True
-        else:
-            self.handBrake = False
-            
-        # print(f"{self.braking} {round(self.brakes, 2)}, {self.accelerating} {round(self.throttle, 2)}, {round(self.steeringAngle, 2)}, {round(self.position.x, 2)} {round(self.position.y, 2)}")
+        # Comment or remove the following lines
+        # keys = pygame.key.get_pressed()
+        # for event in events:
+        #    if event.type == pygame.KEYDOWN:
+        #        if event.key == pygame.K_RSHIFT:
+        #            self.ShiftUp()
+        #        if event.key == pygame.K_RCTRL:
+        #            self.ShifDown()
+
+        # Set throttle to drive forward
+        self.rpm += 100 * 60 * deltaTime
+        self.rpm = min(self.rpm, self.rpm_limit)
+        self.accelerating = True
+        self.throttle = clamp(self.throttle + (self.throttleSpeed * deltaTime), 0.0, 1.0)
+
+        # Remove the following lines related to braking
+        # if keys[pygame.K_DOWN]:
+        #     self.braking = True
+        #     self.brakes = clamp(self.brakes + (self.brakingSpeed * deltaTime), 0.0, 1.0)
+        # else:
+        #     self.braking = False
+        #     self.brakes = clamp(self.brakes - (self.brakingSpeed * deltaTime), 0.0, 1.0)
+                
+            # print(f"{self.braking} {round(self.brakes, 2)}, {self.accelerating} {round(self.throttle, 2)}, {round(self.steeringAngle, 2)}, {round(self.position.x, 2)} {round(self.position.y, 2)}")
 
     def Update(self, deltaTime, events):
         if self.paused:
@@ -274,7 +234,7 @@ if __name__ == "__main__":
     paused = False
     screenWidth, screenHeight = pygame.display.get_surface().get_size()
     
-    car = Car("UwU", Vector2D(40, 40), 90)
+    car = CarAi("UwU", Vector2D(40, 40), 90)
     wall = Wall(Vector2D(screenWidth//2, screenHeight//2), 100, 150, 0)
     
     entities = [car, wall]
@@ -299,7 +259,7 @@ if __name__ == "__main__":
                     entity1 = filteredEntites[i]
                     entity2 = filteredEntites[j]
                     colliderHit = entity1.collider.CheckCollision(entity2.collider)
-                    if isinstance(entity1, Car) and colliderHit:
+                    if isinstance(entity1, CarAi) and colliderHit:
                         pp = entity2.collider.VerticesInsideOtherShape(entity1)
                     # if colliderHit != False and isinstance(entity1, Car):
                     #     v1 = entity1.rb.position
@@ -322,7 +282,7 @@ if __name__ == "__main__":
                 for p in pp:
                     pygame.draw.circle(screen, (0, 255, 0), (p.x, p.y), 10)
             
-            if isinstance(entity, Car):
+            if isinstance(entity, CarAi):
                 rotatedTire1 = RotateVector(entity.frontTireOffset[0], entity.rotation, True)
                 rotatedTire2 = RotateVector(entity.frontTireOffset[1], entity.rotation, True)
                 center1 = (entity.position.x+rotatedTire1.x, entity.position.y+rotatedTire1.y)

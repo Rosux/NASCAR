@@ -24,7 +24,7 @@ class Game:
         pygame.display.set_caption("NASCAR")
         self.clock = pygame.time.Clock()
         self.running = True
-        car1 = Car("Player1", Vector2D(-70, -60), 0)
+        car1 = Car("Player", Vector2D(-70, -60), 0)
         car2 = CarPlayerTwo("Player2", Vector2D(70, -60), 0)
         carAI = CarPlayerTwo("Player", Vector2D(70, -60), 0)
         self.finish = Wall(Vector2D(0, -10300), 600, 600, 0)
@@ -35,10 +35,9 @@ class Game:
             Wall(Vector2D(-250, -5000), 200, 10000, 0),
             
         ]
-        self.speed_limit = 320
         pygame.font.init()
         self.font = pygame.font.Font(None, 36)
-        
+        self.speed_limit = 320
         # sprites
         self.car1 = pygame.image.load("./assets/sprites/pitstop_car_10.png")
         self.car2 = pygame.image.load("./assets/sprites/pitstop_car_1.png")
@@ -166,7 +165,6 @@ class Game:
             player = Vector2D((player1.x + player2.x) / 2, (player1.y + player2.y) / 2)
         offset = player
         img = self.background
-        print(img.get_width(), img.get_height())
         img = pygame.transform.scale(img, (img.get_width() * 2, img.get_height() * 2))
         rect = img.get_rect(midbottom=(0-offset.x+(width//2), 0-offset.y+(height//2)))
         self.screen.blit(img, rect.topleft)
@@ -199,13 +197,9 @@ class Game:
                 center_x, center_y = width // 2, height - (height // 40)
                 pygame.draw.circle(self.screen, (128, 128, 128), (center_x + min(width // 4, height // 4), center_y), min(width // 4, height // 4),2 )
                 pygame.draw.circle(self.screen, (255, 255, 255), (center_x + min(width // 4, height // 4), center_y), min(width // 4, height // 4) - 10)
-                
-                #draw speef
-                cc = car.rb.GetPointVelocity(car.rb.position)
-                speef = (Magnitude(cc) / 1500) * 300
-
-                # # Draw speedometer needle
-                angle = 180 - (speef / self.speed_limit) * 180
+            
+                # Draw speedometer needle
+                angle = 180 - (car.GetSpeef()/ car.speed_limit) * 180
                 angle_rad = math.radians(angle)
                 needle_length = min(width // 4, height // 4) - 20
                 end_point = ((center_x + min(width // 4, height // 4)) + needle_length * math.cos(angle_rad), center_y - needle_length * math.sin(angle_rad))
@@ -218,7 +212,7 @@ class Game:
                 pygame.draw.line(self.screen, (255, 0, 0), (center_x - min(width // 4, height // 4), center_y), (int(end_point[0]), int(end_point[1])), 5)
                 
                 # Display speed
-                gear_text = self.font.render(f"Speed: {int(speef)}", True, (0, 0, 0))
+                gear_text = self.font.render(f"Speed: {int(car.GetSpeef())}", True, (0, 0, 0))
                 self.screen.blit(gear_text, (width // 2 - gear_text.get_width() // 2 + (width // 7), height - (height // 5)))
                 
                 # Display rpm value
