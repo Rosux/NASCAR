@@ -101,12 +101,12 @@ class RectangleCollision:
         for p in points:
             r = RotateVectorAroundPoint(p, self.position, rotationFactor + radians(45), True)
             dir = Direction.NONE
-            if r.x <= self.position.x and r.y <= self.position.y: # Left
-                print("Left")
-                dir = Direction.LEFT
-            elif r.x <= self.position.x and r.y >= self.position.y: # Bottom
+            if r.x <= self.position.x and r.y <= self.position.y: # Bottom
                 print("Bottom")
                 dir = Direction.BOTTOM
+            elif r.x <= self.position.x and r.y >= self.position.y: # Left
+                print("Left")
+                dir = Direction.LEFT
             elif r.x >= self.position.x and r.y <= self.position.y: # Top
                 print("Top")
                 dir = Direction.TOP

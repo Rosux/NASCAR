@@ -153,13 +153,13 @@ class CarPlayerTwo(Entity):
                 if event.key == pygame.K_LCTRL:
                     self.ShifDown()
         # handle steering input
-        if keys[pygame.K_d]:
-            self.steering = True
-            self.steeringAngle = clamp(self.steeringAngle - (self.steeringSpeed * deltaTime), -1.0, 1.0)
         if keys[pygame.K_a]:
             self.steering = True
+            self.steeringAngle = clamp(self.steeringAngle - (self.steeringSpeed * deltaTime), -1.0, 1.0)
+        if keys[pygame.K_d]:
+            self.steering = True
             self.steeringAngle = clamp(self.steeringAngle + (self.steeringSpeed * deltaTime), -1.0, 1.0)
-        if not keys[pygame.K_d] and not keys[pygame.K_a]:
+        if not keys[pygame.K_a] and not keys[pygame.K_d]:
             self.steering = False
         # turn steering wheel back if user isnt controlling it
         if self.steeringAngle > 0.0 and not self.steering:
