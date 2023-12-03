@@ -136,7 +136,7 @@ class Car(Entity):
         return self.gearSpeed[self.gear+1]
 
     def ShiftUp(self):
-        print(self.speef)
+        # print(self.speef)
         if self.gear == 0 or self.gear == -1 or self.GetSpeef() >= 0.7 * self.speed_limit:    
             if self.paused:
                 return

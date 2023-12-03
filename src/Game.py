@@ -109,17 +109,17 @@ class Game:
                                 entity2.rb.velocity = Vector2D(0, 0)
                                 entity1.collider.VerticesInsideOtherShape(entity2)
                             if isinstance(entity1, Car) and entity1.collider.CheckCollision(self.finish.collider):
-                                print("player 1 wins!")
+                                # print("player 1 wins!")
                                 self.winTitle = f"Player 1 won!\nTime: {self.currentTime:.2f}"
                                 self.winCar = self.car1
                                 self.currentScene = Scene.STATS
                             if isinstance(entity1, CarPlayerTwo) and entity1.collider.CheckCollision(self.finish.collider):
-                                print("player 2 wins!")
+                                # print("player 2 wins!")
                                 self.winCar = self.car2
                                 self.winTitle = f"Player 2 won!\nTime: {self.currentTime:.2f}"
                                 self.currentScene = Scene.STATS
                             if isinstance(entity1, CarAI) and entity1.collider.CheckCollision(self.finish.collider):
-                                print("AI wins!")
+                                # print("AI wins!")
                                 self.winCar = self.car2
                                 self.winTitle = f"AI won!\nTime: {self.currentTime:.2f}"
                                 self.currentScene = Scene.STATS
@@ -166,6 +166,7 @@ class Game:
         screenSize = Vector2D(screenWidth, screenHeight)
         overlay = Utils.Surface(screenWidth, screenHeight)
         overlay.Rect(0.0, 0.0, 1.0, 1.0, (255, 255, 255, 255))
+        overlay.Rect(0, 1.0, 1.0, 0.1, (255, 255, 255), Utils.Anchor.BOTTOMLEFT, "Jacobus highscore: 06.69\nDeclan highscore: 06.31", (255, 0, 0), Utils.Align.LEFT)
         
         if self.currentSelection == 0:
             overlay.Rect(0.5, 0.35, 0.3, 0.1, (0, 0, 0, 255), Utils.Anchor.CENTER, "Single Player", (255, 255, 0))
@@ -225,10 +226,6 @@ class Game:
             player2 = multuplePlayers[1].position
             player = Vector2D((player1.x + player2.x) / 2, (player1.y + player2.y) / 2)
         offset = player
-        # remove
-        f = [c for c in self.entities if isinstance(c, CarAI)]
-        offset = f[0].position
-        # remove ^
         img = self.background
         img = pygame.transform.scale(img, (img.get_width() * 2, img.get_height() * 2))
         rect = img.get_rect(midbottom=(0-offset.x+(width//2), 0-offset.y+(height//2)))
