@@ -21,19 +21,19 @@ class Game:
     def __init__(self):
         pygame.display.init()
         self.screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
-        pygame.display.set_caption("NASCAR")
+        pygame.display.set_caption("DragStrip")
         self.clock = pygame.time.Clock()
         self.running = True
-        car1 = Car("Player1", Vector2D(-70, -60), 0)
-        car2 = CarPlayerTwo("Player2", Vector2D(70, -60), 0)
-        carAI = CarPlayerTwo("Player", Vector2D(70, -60), 0)
+        # car1 = Car("Player", Vector2D(-70, -60), 0)
+        # car2 = CarPlayerTwo("Player2", Vector2D(70, -60), 0)
+        # carAI = CarPlayerTwo("Player", Vector2D(70, -60), 0)
         self.finish = Wall(Vector2D(0, -10300), 600, 600, 0)
         self.entities = [
-            car1,
+            Car("Player", Vector2D(-70, -60), 0),
+            CarPlayerTwo("Player2", Vector2D(70, -60), 0),
             Wall(Vector2D(0, 300), 600, 600, 0),
             Wall(Vector2D(250, -5000), 200, 10000, 0),
             Wall(Vector2D(-250, -5000), 200, 10000, 0),
-            
         ]
         self.speed_limit = 320
         pygame.font.init()
@@ -45,6 +45,9 @@ class Game:
         self.background = pygame.image.load("./assets/sprites/Dragstrip.png")
         self.currentScene = Scene.MAINMENU
         self.currentSelection = 0
+        self.currentTime = -5.0
+        self.winTitle = ""
+        self.winCar = 0
 
     def AddEntity(self, entity):
         self.entities.append(entity)
@@ -83,40 +86,62 @@ class Game:
 
             # run update method on all entities
             for entity in self.entities:
-                if entity.active and self.currentScene == Scene.RACE:
+                if entity.active and self.currentScene == Scene.RACE and self.currentTime >= 0.0:
                     entity.Update(dt, events)
             filteredEntites = [e for e in self.entities if e.active and e.collision and hasattr(e, "collider")]
             
             if self.currentScene == Scene.RACE:
-                for i in range(len(filteredEntites)):
-                    for j in range(i+1, len(filteredEntites)):
-                        entity1 = filteredEntites[i]
-                        entity2 = filteredEntites[j]
-                        colliderHit = entity1.collider.CheckCollision(entity2.collider)
-                        if (isinstance(entity1, Car) or isinstance(entity1, CarPlayerTwo)) and (isinstance(entity2, Car) or isinstance(entity2, CarPlayerTwo)):
-                            entity2.collider.VerticesInsideOtherShape(entity1)
-                            entity1.collider.VerticesInsideOtherShape(entity2)
-                        if (isinstance(entity1, Car) or isinstance(entity1, CarPlayerTwo)) and colliderHit:
-                            entity1.rb.velocity = Vector2D(0, 0)
-                            entity1.rb.rotational_velocity = 0
-                            entity2.collider.VerticesInsideOtherShape(entity1)
-                        if (isinstance(entity2, Car) or isinstance(entity2, CarPlayerTwo)) and colliderHit:
-                            entity2.rb.rotational_velocity = 0
-                            entity2.rb.velocity = Vector2D(0, 0)
-                            entity1.collider.VerticesInsideOtherShape(entity2)
-                        if isinstance(entity1, Car) and entity1.collider.CheckCollision(self.finish.collider):
-                            print("player 1 wins")
-                        if isinstance(entity1, CarPlayerTwo) and entity1.collider.CheckCollision(self.finish.collider):
-                            print("player 2 wins")
+                self.currentTime += dt
+                if self.currentTime >= 0.0:
+                    for i in range(len(filteredEntites)):
+                        for j in range(i+1, len(filteredEntites)):
+                            entity1 = filteredEntites[i]
+                            entity2 = filteredEntites[j]
+                            colliderHit = entity1.collider.CheckCollision(entity2.collider)
+                            if (isinstance(entity1, Car) or isinstance(entity1, CarPlayerTwo)) and (isinstance(entity2, Car) or isinstance(entity2, CarPlayerTwo)):
+                                entity2.collider.VerticesInsideOtherShape(entity1)
+                                entity1.collider.VerticesInsideOtherShape(entity2)
+                            if (isinstance(entity1, Car) or isinstance(entity1, CarPlayerTwo)) and colliderHit:
+                                entity1.rb.velocity = Vector2D(0, 0)
+                                entity1.rb.rotational_velocity = 0
+                                entity2.collider.VerticesInsideOtherShape(entity1)
+                            if (isinstance(entity2, Car) or isinstance(entity2, CarPlayerTwo)) and colliderHit:
+                                entity2.rb.rotational_velocity = 0
+                                entity2.rb.velocity = Vector2D(0, 0)
+                                entity1.collider.VerticesInsideOtherShape(entity2)
+                            if isinstance(entity1, Car) and entity1.collider.CheckCollision(self.finish.collider):
+                                print("player 1 wins")
+                                self.winTitle = f"Player 1 won!\nTime: {self.currentTime:.2f}"
+                                self.winCar = self.car1
+                                self.currentScene = Scene.STATS
+                            if isinstance(entity1, CarPlayerTwo) and entity1.collider.CheckCollision(self.finish.collider):
+                                print("player 2 wins")
+                                self.winCar = self.car2
+                                self.winTitle = f"Player 2 won!\nTime: {self.currentTime:.2f}"
+                                self.currentScene = Scene.STATS
             # clear screen then draw new stuff to screen
             self.screen.fill((0, 0, 0, 255))
             if self.currentScene == Scene.RACE:
                 self.DrawScene()
                 self.DrawUI()
+                self.DrawLapTime(self.currentTime)
+            elif self.currentScene == Scene.STATS:
+                for event in events:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN:
+                            self.currentScene = Scene.MAINMENU
+                self.DrawStats()
             elif self.currentScene == Scene.MAINMENU:
                 self.DrawMainMenu(events)
             pygame.display.flip()
             
+    def DrawLapTime(self, time):
+        screenWidth, screenHeight = pygame.display.get_surface().get_size()
+        screenSize = Vector2D(screenWidth, screenHeight)
+        overlay = Utils.Surface(screenWidth, screenHeight)
+        overlay.Rect(0.0, 0.0, 1.0, 0.1, (0, 0, 0, 0), Utils.Anchor.TOPLEFT, f"{time:.2f}", (255, 255, 255), Utils.Align.LEFT)
+        self.screen.blit(overlay.surface, (0, 0))
+        
     def DrawMainMenu(self, events):
         screenWidth, screenHeight = pygame.display.get_surface().get_size()
         screenSize = Vector2D(screenWidth, screenHeight)
@@ -144,8 +169,21 @@ class Game:
                     self.currentSelection = (self.currentSelection + 1) % 3
                 if event.key == pygame.K_RETURN:
                     if self.currentSelection == 0: # singleplayer
+                        self.entities = [
+                            Car("Player", Vector2D(70, -60), 0),
+                            Wall(Vector2D(0, 300), 600, 600, 0),
+                            Wall(Vector2D(250, -5000), 200, 10000, 0),
+                            Wall(Vector2D(-250, -5000), 200, 10000, 0),
+                        ]
                         self.currentScene = Scene.RACE
                     if self.currentSelection == 1: # 2 players
+                        self.entities = [
+                            Car("Player", Vector2D(70, -60), 0),
+                            CarPlayerTwo("Player2", Vector2D(-70, -60), 0),
+                            Wall(Vector2D(0, 300), 600, 600, 0),
+                            Wall(Vector2D(250, -5000), 200, 10000, 0),
+                            Wall(Vector2D(-250, -5000), 200, 10000, 0),
+                        ]
                         self.currentScene = Scene.RACE
                     if self.currentSelection == 2: # quit
                         self.running = False
@@ -166,7 +204,6 @@ class Game:
             player = Vector2D((player1.x + player2.x) / 2, (player1.y + player2.y) / 2)
         offset = player
         img = self.background
-        print(img.get_width(), img.get_height())
         img = pygame.transform.scale(img, (img.get_width() * 2, img.get_height() * 2))
         rect = img.get_rect(midbottom=(0-offset.x+(width//2), 0-offset.y+(height//2)))
         self.screen.blit(img, rect.topleft)
@@ -181,9 +218,17 @@ class Game:
                 points = entity.collider.GetPoints(entity.collider)
                 pygame.draw.polygon(self.screen, (255, 0, 0), [(p.x-offset.x+(width//2), p.y-offset.y+(height//2)) for p in points], 1)
 
-    def DrawRaceStats(self):
-        # teken racemanager ui hier zoals tijd over, punten, positie, etc
-        pass
+    def DrawStats(self):
+        screenWidth, screenHeight = pygame.display.get_surface().get_size()
+        screenSize = Vector2D(screenWidth, screenHeight)
+        overlay = Utils.Surface(screenWidth, screenHeight)
+        overlay.Rect(0.0, 0.0, 1.0, 1.0, (0, 0, 0, 255), Utils.Anchor.TOPLEFT, self.winTitle+"\nPress enter to return to menu.", (255, 255, 255), Utils.Align.CENTER)
+        self.screen.blit(overlay.surface, (0, 0))
+        img = self.winCar
+        img = pygame.transform.scale(img, (img.get_width()/2, img.get_height()/2))
+        img = pygame.transform.rotate(img, 90)
+        rect = img.get_rect(center=(screenWidth//2, screenHeight//2+(screenHeight//6)))
+        self.screen.blit(img, rect.topleft)
     
     def DrawUI(self):
         for car in self.entities:

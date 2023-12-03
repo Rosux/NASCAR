@@ -102,16 +102,12 @@ class RectangleCollision:
             r = RotateVectorAroundPoint(p, self.position, rotationFactor + radians(45), True)
             dir = Direction.NONE
             if r.x <= self.position.x and r.y <= self.position.y: # Bottom
-                print("Bottom")
                 dir = Direction.BOTTOM
             elif r.x <= self.position.x and r.y >= self.position.y: # Left
-                print("Left")
                 dir = Direction.LEFT
             elif r.x >= self.position.x and r.y <= self.position.y: # Top
-                print("Top")
                 dir = Direction.TOP
             elif r.x >= self.position.x and r.y >= self.position.y: # Right
-                print("Right")
                 dir = Direction.RIGHT
             # push rigidbody away from collider
             if hasattr(other, "rb"):
