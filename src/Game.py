@@ -141,7 +141,7 @@ class Game:
                 
                 # Display speed
                 gear_text = self.font.render(f"Speed: {int(speef)}", True, (0, 0, 0))
-                self.screen.blit(gear_text, (width // 2 - gear_text.get_width() // 2 + (width // 7), height - (height // 6)))
+                self.screen.blit(gear_text, (width // 2 - gear_text.get_width() // 2 + (width // 7), height - (height // 5)))
                 
                 # Display rpm value
                 rpm_text = self.font.render(f"Rpm: {int(car.GetRpm())}", True, (0, 0, 0))
