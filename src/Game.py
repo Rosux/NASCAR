@@ -5,12 +5,15 @@ from Entity import Entity
 from enum import Enum
 from Car import Car
 from CarPlayerTwo import CarPlayerTwo
+from CarAi import CarAI
 from Wall import Wall
 from RaceManager import Race
 from Collision import RectangleCollision
 import UI.Utils as Utils
 import math
 import random
+import pygame.mixer
+
 
 class Scene(Enum):
     MAINMENU = 0
@@ -20,6 +23,7 @@ class Scene(Enum):
 class Game:
     def __init__(self):
         pygame.display.init()
+        pygame.mixer.init()
         self.screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
         pygame.display.set_caption("DragStrip")
         self.clock = pygame.time.Clock()
@@ -41,6 +45,8 @@ class Game:
         self.currentTime = -5.0
         self.winTitle = ""
         self.winCar = 0
+        self.musicRun = False
+        self.musicRun2 = False
 
     def AddEntity(self, entity):
         self.entities.append(entity)
@@ -91,40 +97,60 @@ class Game:
                             entity1 = filteredEntites[i]
                             entity2 = filteredEntites[j]
                             colliderHit = entity1.collider.CheckCollision(entity2.collider)
-                            if (isinstance(entity1, Car) or isinstance(entity1, CarPlayerTwo)) and (isinstance(entity2, Car) or isinstance(entity2, CarPlayerTwo)):
+                            if (isinstance(entity1, Car) or isinstance(entity1, CarPlayerTwo) or isinstance(entity1, CarAI)) and (isinstance(entity2, Car) or isinstance(entity2, CarPlayerTwo) or isinstance(entity2, CarAI)):
                                 entity2.collider.VerticesInsideOtherShape(entity1)
                                 entity1.collider.VerticesInsideOtherShape(entity2)
-                            if (isinstance(entity1, Car) or isinstance(entity1, CarPlayerTwo)) and colliderHit:
+                            if (isinstance(entity1, Car) or isinstance(entity1, CarPlayerTwo) or isinstance(entity1, CarAI)) and colliderHit:
                                 entity1.rb.velocity = Vector2D(0, 0)
                                 entity1.rb.rotational_velocity = 0
                                 entity2.collider.VerticesInsideOtherShape(entity1)
-                            if (isinstance(entity2, Car) or isinstance(entity2, CarPlayerTwo)) and colliderHit:
+                            if (isinstance(entity2, Car) or isinstance(entity2, CarPlayerTwo) or isinstance(entity2, CarAI)) and colliderHit:
                                 entity2.rb.rotational_velocity = 0
                                 entity2.rb.velocity = Vector2D(0, 0)
                                 entity1.collider.VerticesInsideOtherShape(entity2)
                             if isinstance(entity1, Car) and entity1.collider.CheckCollision(self.finish.collider):
-                                print("player 1 wins")
+                                print("player 1 wins!")
                                 self.winTitle = f"Player 1 won!\nTime: {self.currentTime:.2f}"
                                 self.winCar = self.car1
                                 self.currentScene = Scene.STATS
                             if isinstance(entity1, CarPlayerTwo) and entity1.collider.CheckCollision(self.finish.collider):
-                                print("player 2 wins")
+                                print("player 2 wins!")
                                 self.winCar = self.car2
                                 self.winTitle = f"Player 2 won!\nTime: {self.currentTime:.2f}"
+                                self.currentScene = Scene.STATS
+                            if isinstance(entity1, CarAI) and entity1.collider.CheckCollision(self.finish.collider):
+                                print("AI wins!")
+                                self.winCar = self.car2
+                                self.winTitle = f"AI won!\nTime: {self.currentTime:.2f}"
                                 self.currentScene = Scene.STATS
             # clear screen then draw new stuff to screen
             self.screen.fill((0, 0, 0, 255))
             if self.currentScene == Scene.RACE:
+                if not self.musicRun:
+                    pygame.mixer.music.stop()  # Stop any currently playing music
+                    pygame.mixer.music.load('./assets/Gas.wav')
+                    pygame.mixer.music.set_volume(0.05)
+                    pygame.mixer.music.play(-1)
+                    self.musicRun = True
                 self.DrawScene()
                 self.DrawUI()
                 self.DrawLapTime(self.currentTime)
             elif self.currentScene == Scene.STATS:
+                if not self.musicRun2:
+                    pygame.mixer.music.stop()  # Stop any currently playing music
+                    pygame.mixer.music.load('./assets/finishHIM.mp3')
+                    pygame.mixer.music.set_volume(0.05)
+                    pygame.mixer.music.play(-1)
+                    self.musicRun2 = True
                 for event in events:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_RETURN:
                             self.currentScene = Scene.MAINMENU
+                            self.musicRun = False
+                            self.musicRun2 = False
                 self.DrawStats()
             elif self.currentScene == Scene.MAINMENU:
+                pygame.mixer.music.stop() 
                 self.DrawMainMenu(events)
             pygame.display.flip()
             
@@ -164,6 +190,7 @@ class Game:
                     if self.currentSelection == 0: # singleplayer
                         self.entities = [
                             Car("Player", Vector2D(70, -60), 0),
+                            CarAI("AI", Vector2D(-70, -60), 0),
                             Wall(Vector2D(0, 300), 600, 600, 0),
                             Wall(Vector2D(250, -5000), 200, 10000, 0),
                             Wall(Vector2D(-250, -5000), 200, 10000, 0),
@@ -203,7 +230,7 @@ class Game:
         rect = img.get_rect(midbottom=(0-offset.x+(width//2), 0-offset.y+(height//2)))
         self.screen.blit(img, rect.topleft)
         for entity in self.entities:
-            if isinstance(entity, Car) or isinstance(entity, CarPlayerTwo):
+            if isinstance(entity, Car) or isinstance(entity, CarPlayerTwo) or isinstance(entity, CarAI):
                 img = self.car1 if isinstance(entity, Car) else self.car2
                 img = pygame.transform.scale(img, (entity.rb.width, entity.rb.height))
                 img = pygame.transform.rotate(img,- math.degrees(entity.rotation)+180)
