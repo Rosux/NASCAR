@@ -152,23 +152,8 @@ class CarAI(Entity):
 
     def HandleInput(self, deltaTime, events):
         self.ShiftUp()
-        
-        # keypresses
-        # for event in events:
-        #     if event.type == pygame.KEYDOWN:
-        #         if event.key == pygame.K_RSHIFT:
-        #             self.ShiftUp()
-        #         if event.key == pygame.K_RCTRL:
-        #             self.ShifDown()
-        # handle steering input
-        # if keys[pygame.K_LEFT]:
-        #     self.steering = True
-        #     self.steeringAngle = clamp(self.steeringAngle - (self.steeringSpeed * deltaTime), -1.0, 1.0)
-        # if keys[pygame.K_RIGHT]:
-        #     self.steering = True
-        #     self.steeringAngle = clamp(self.steeringAngle + (self.steeringSpeed * deltaTime), -1.0, 1.0)
-        # if not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
-        #     self.steering = False
+        self.steering = True
+        self.steeringAngle = clamp(-0.0068, -1.0, 1.0)
         # turn steering wheel back if user isnt controlling it
         if self.steeringAngle > 0.0 and not self.steering:
             self.steeringAngle = clamp(self.steeringAngle - (self.steeringReturnSpeed * deltaTime), -1.0, 1.0)
